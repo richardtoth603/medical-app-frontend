@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label"
 import { FileText, Upload, Send } from 'lucide-react'
 
+// IMPORTANT NOTE: This component is not complete and is only meant to be used as a reference.
+
 export function MedicalAppComponent() {
   const [pdfs, setPdfs] = useState<string[]>([])
   const [isDragging, setIsDragging] = useState(false)
