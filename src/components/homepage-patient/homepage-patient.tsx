@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navbar, NavItem } from "../ui/navbar";
 import { PatientDetails } from "./patient-details";
+import { DoctorDetails } from "./doctors-page-patient-pov";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Patient } from "@/domain/models/Patient";
@@ -94,12 +95,28 @@ export default function PatientPortal() {
   const [currentPage, setCurrentPage] = useState("home");
   const [doctors] = useState<Doctor[]>(dummyDoctors);
   const [medicines] = useState<Medicine[]>(dummyMedicines);
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
 
   const handleNavigation = (href: string) => {
     setCurrentPage(href);
+    setSelectedDoctor(null);
+  };
+
+  const handleViewDoctor = (doctor: Doctor) => {
+    setSelectedDoctor(doctor);
+  };
+
+  const handleBackToList = () => {
+    setSelectedDoctor(null);
   };
 
   const renderContent = () => {
+    if (selectedDoctor) {
+      return (
+        <DoctorDetails doctor={selectedDoctor} onBack={handleBackToList} />
+      );
+    }
+
     switch (currentPage) {
       case "patient":
         return <PatientDetails initialPatient={dummyPatient} />;
@@ -134,6 +151,7 @@ export default function PatientPortal() {
                             variant="outline"
                             size="sm"
                             className="w-full"
+                            onClick={() => handleViewDoctor(doctor)}
                           >
                             View Doctor Page
                           </Button>
