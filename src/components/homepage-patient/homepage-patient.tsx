@@ -9,6 +9,7 @@ import { Doctor } from "@/domain/models/Doctor";
 import { Medicine } from "@/domain/models/Medicine";
 import { useApplicationContext } from "@/context/ApplicationContext";
 import { useNavigate, useParams } from "react-router-dom";
+import { useFetchDoctors } from "@/hooks/patientHooks";
 
 const dummyPatient: Patient = {
   id: "P12345",
@@ -94,6 +95,7 @@ const navItems: NavItem[] = [
 ];
 
 export default function PatientPortal() {
+  const { data, status, isLoading} = useFetchDoctors();
   const [currentPage, setCurrentPage] = useState("home");
   const [doctors] = useState<Doctor[]>(dummyDoctors);
   const [medicines] = useState<Medicine[]>(dummyMedicines);
@@ -106,6 +108,7 @@ export default function PatientPortal() {
     if (localStorage.getItem("token") === null || localStorage.getItem("token") === undefined) {
       navigate("/signup");
     }
+    //TODO: technically we should check for the user ID here, instead of the roleId
     const roleIdFromPath = params.roleId;
     const roleIdFromStorage = localStorage.getItem("role_id");
 
@@ -152,7 +155,12 @@ export default function PatientPortal() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px] overflow-y-auto pr-4">
-                    {doctors.map((doctor) => (
+                    {isLoading && <p>Loading...</p>}
+                    {status === "error" && <p>Error fetching doctors</p>}
+                    {status === "success" && data && data.length === 0 && (
+                      <p>No doctors found</p>
+                    )}
+                    {status === 'success' && data.map((doctor) => (
                       <div
                         key={doctor.id}
                         className="mb-4 p-3 bg-secondary rounded-lg"

@@ -9,6 +9,7 @@ const routes = createBrowserRouter([
     {
         path: "/",
         element: <MainPage />,
+        //TODO: instead of using roleId as path, we should use the user Id, keeping the roleId in the local storage
         children: [
             // {
             //     path: "/signin",
