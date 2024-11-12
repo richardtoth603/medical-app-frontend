@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
-import { Button } from '../ui/button'
-import { Textarea } from '../ui/textarea'
-import { Input } from '../ui/input'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface Patient {
   id: string
@@ -11,10 +10,20 @@ interface Patient {
   dateOfBirth: Date
 }
 
-export default function PatientScreen(givenPatient: Patient) {
-  const [patient, setPatient] = useState<Patient>(givenPatient)
+export default function PatientScreen() {
+  const [patient] = useState<Patient>({
+    id: '12345',
+    firstName: 'John',
+    lastName: 'Doe',
+    dateOfBirth: new Date('1990-01-01'),
+  })
   const [chatMessage, setChatMessage] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
+
+  const formatDate = (date: Date): string => {
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
+    return date.toLocaleDateString(undefined, options)
+  }
 
   const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,33 +61,19 @@ export default function PatientScreen(givenPatient: Patient) {
             <CardTitle>Patient Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
-                <Input
-                  id="firstName"
-                  value={patient.firstName}
-                  onChange={(e) => setPatient({ ...patient, firstName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</label>
-                <Input
-                  id="lastName"
-                  value={patient.lastName}
-                  onChange={(e) => setPatient({ ...patient, lastName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">Date of Birth</label>
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={patient.dateOfBirth.toISOString().split('T')[0]}
-                  onChange={(e) => setPatient({ ...patient, dateOfBirth: new Date(e.target.value) })}
-                />
-              </div>
-            </div>
+            <dl className="grid grid-cols-3 gap-4">
+              <div className="col-span-1 font-semibold">ID:</div>
+              <div className="col-span-2">{patient.id}</div>
+              
+              <div className="col-span-1 font-semibold">First Name:</div>
+              <div className="col-span-2">{patient.firstName}</div>
+              
+              <div className="col-span-1 font-semibold">Last Name:</div>
+              <div className="col-span-2">{patient.lastName}</div>
+              
+              <div className="col-span-1 font-semibold">Date of Birth:</div>
+              <div className="col-span-2">{formatDate(patient.dateOfBirth)}</div>
+            </dl>
           </CardContent>
         </Card>
 
