@@ -5,7 +5,7 @@ import SignUpForm, { UserSignUpData } from "@/components/auth/SignUpForm.tsx";
 import { MedicalAppComponent } from "./components/medical-app";
 import Signup from "./components/signup.tsx";
 import DoctorPage from "./components/homepage-doctor/doctor-homepage.tsx";
-
+import PatientPage from "./components/homepage-doctor/patient-page.tsx"
 const handleSignUpSubmit = (formData: UserSignUpData) => {
   // Handle form submission (e.g., API call or state update)
   console.log("Form submitted:", formData);
@@ -17,7 +17,7 @@ function App() {
   return (
     <>
       {/* <SignUpForm onSubmit={handleSignUpSubmit} /> */}
-      <Signup />
+      <PatientPage />
     </>
   );
 }
