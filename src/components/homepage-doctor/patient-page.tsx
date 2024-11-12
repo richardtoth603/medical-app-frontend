@@ -11,13 +11,8 @@ interface Patient {
   dateOfBirth: Date
 }
 
-export default function PatientScreen() {
-  const [patient, setPatient] = useState<Patient>({
-    id: '12345',
-    firstName: 'John',
-    lastName: 'Doe',
-    dateOfBirth: new Date('1990-01-01'),
-  })
+export default function PatientScreen(givenPatient: Patient) {
+  const [patient, setPatient] = useState<Patient>(givenPatient)
   const [chatMessage, setChatMessage] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
 
