@@ -17,8 +17,7 @@ function App() {
   return (
     <>
       {/* <SignUpForm onSubmit={handleSignUpSubmit} /> */}
-      {/*<Signup />*/}
-      <DoctorPage />
+      <Signup />
     </>
   );
 }
