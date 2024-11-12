@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navbar, NavItem } from "../ui/navbar";
 import { PatientDetails } from "./patient-details";
 import { DoctorDetails } from "./doctors-page-patient-pov";
@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Patient } from "@/domain/models/Patient";
 import { Doctor } from "@/domain/models/Doctor";
 import { Medicine } from "@/domain/models/Medicine";
+import { useApplicationContext } from "@/context/ApplicationContext";
+import { useNavigate, useParams } from "react-router-dom";
 
 const dummyPatient: Patient = {
   id: "P12345",
@@ -96,6 +98,21 @@ export default function PatientPortal() {
   const [doctors] = useState<Doctor[]>(dummyDoctors);
   const [medicines] = useState<Medicine[]>(dummyMedicines);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const params = useParams();
+  const navigate = useNavigate();
+
+  // check if the user is authorized to view this page
+  useEffect(() => {
+    if (localStorage.getItem("token") === null || localStorage.getItem("token") === undefined) {
+      navigate("/signup");
+    }
+    const roleIdFromPath = params.roleId;
+    const roleIdFromStorage = localStorage.getItem("role_id");
+
+    if (roleIdFromPath !== roleIdFromStorage) {
+      navigate("/signin");
+    }
+  }, []);
 
   const handleNavigation = (href: string) => {
     setCurrentPage(href);
@@ -206,7 +223,6 @@ export default function PatientPortal() {
         );
     }
   };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar

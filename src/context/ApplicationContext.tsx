@@ -1,5 +1,5 @@
 import { ApplicationUser } from "@/domain/models/ApplicationUser";
-import { createContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 export class AuthenticationUrls {
     static loginUrl = "https://localhost:7062/Authentication/Login";
@@ -13,7 +13,7 @@ export type ApplicationContextType = {
     login: (email: string, password: string) => Promise<boolean>;
     token: string | undefined;
     logout: () => void;
-    register: (email: string, password: string, firstName: string, lastName: string) => Promise<boolean>;
+    register: (email: string, password: string, firstName: string, lastName: string, role: string) => Promise<boolean>;
 };
 
 export const ApplicationContext = createContext<ApplicationContextType>({
@@ -38,6 +38,7 @@ export const ApplicationContextProvider = ({ children }: { children: React.React
             body: JSON.stringify({ email, password }),
         });
         if (response.ok) {
+            localStorage.clear();
             const data = await response.text();
             //decode from base64
             let decodedData = atob(data);
@@ -47,6 +48,9 @@ export const ApplicationContextProvider = ({ children }: { children: React.React
             let token = parsedData.Token;
             let decodedToken = atob(token);
             let parsedToken = JSON.parse(decodedToken);
+            localStorage.setItem("id", parsedToken.id);
+            localStorage.setItem("firstName", parsedToken.firstName);
+            localStorage.setItem("lastName", parsedToken.lastName);
             localStorage.setItem("email", parsedToken.email);
             localStorage.setItem("role", parsedToken.role);
             localStorage.setItem("role_id", parsedToken.role_id);
@@ -73,13 +77,13 @@ export const ApplicationContextProvider = ({ children }: { children: React.React
         setUser(undefined);
     };
 
-    const register = async (email: string, password: string, role: string) => {
+    const register = async (email: string, firstName: string, lastName: string, password: string, role: string) => {
         const response = await fetch(AuthenticationUrls.registerUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email, password, role }),
+            body: JSON.stringify({ email, password, firstName, lastName, role }),
         });
         return response.ok;
     }
@@ -89,4 +93,8 @@ export const ApplicationContextProvider = ({ children }: { children: React.React
             {children}
         </ApplicationContext.Provider>
     );
+}
+
+export const useApplicationContext = () => {
+    return useContext(ApplicationContext);
 }

@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye, EyeOff } from 'lucide-react'
+import { useApplicationContext } from '@/context/ApplicationContext'
+import { useNavigate } from 'react-router-dom'
 
 interface FormData {
   firstName: string;
@@ -27,6 +29,8 @@ export default function SignUp() {
     dob: '',
     role: 'patient',
   })
+  const appContext = useApplicationContext();
+  const navigate = useNavigate();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
@@ -47,7 +51,8 @@ export default function SignUp() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    console.log('Form Data:', formData)
+    appContext.register(formData.email, formData.firstName, formData.lastName, formData.password, formData.role);
+    navigate('/signin');
   }
 
   return (

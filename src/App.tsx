@@ -1,23 +1,20 @@
 //import { useState } from 'react'
 import "./App.css";
 //import { MedicalAppComponent } from './components/medical-app'
-import SignUpForm, { UserSignUpData } from "@/components/auth/SignUpForm.tsx";
-import { MedicalAppComponent } from "./components/medical-app";
-import Signup from "./components/signup.tsx";
-import DoctorPage from "./components/homepage-doctor/doctor-homepage.tsx";
+import { RouterProvider } from "react-router-dom";
+import { Routes } from "./routes/Router.tsx";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const handleSignUpSubmit = (formData: UserSignUpData) => {
-  // Handle form submission (e.g., API call or state update)
-  console.log("Form submitted:", formData);
-};
+const queryClient = new QueryClient()
 
 function App() {
   //const [count, setCount] = useState(0)
 
   return (
     <>
-      {/* <SignUpForm onSubmit={handleSignUpSubmit} /> */}
-      <Signup />
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={Routes} />
+      </QueryClientProvider>
     </>
   );
 }
