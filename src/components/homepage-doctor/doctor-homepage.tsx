@@ -1,13 +1,15 @@
-import React, { useState } from "react";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import DoctorProfile from "./doctor-profile";
+import PatientList from "./doctor-patientList";
+import AppointmentList from "./doctor-appointmentList";
+import { Navbar } from "@/components/ui/navbar";
+import { NavItem } from "@/components/ui/navbar";
 import { Patient } from "@/domain/models/Patient";
 import { Doctor } from "@/domain/models/Doctor";
 import { Appointment } from "@/domain/models/Appointment";
-import { Navbar, NavItem } from "../ui/navbar";
+import Timetable from "./doctor-timetable";
 
-// Initial Fake Data
+// Extended Fake Data
 const initialPatients: Patient[] = [
   {
     id: "p1",
@@ -20,6 +22,84 @@ const initialPatients: Patient[] = [
     firstName: "Bob",
     lastName: "Jones",
     dateOfBirth: new Date("1992-11-22"),
+  },
+  {
+    id: "p3",
+    firstName: "Charlie",
+    lastName: "Brown",
+    dateOfBirth: new Date("2000-08-30"),
+  },
+  {
+    id: "p4",
+    firstName: "David",
+    lastName: "White",
+    dateOfBirth: new Date("1975-02-10"),
+  },
+  {
+    id: "p5",
+    firstName: "Eve",
+    lastName: "Williams",
+    dateOfBirth: new Date("1985-06-19"),
+  },
+  {
+    id: "p6",
+    firstName: "Frank",
+    lastName: "Taylor",
+    dateOfBirth: new Date("1990-03-11"),
+  },
+  {
+    id: "p7",
+    firstName: "Grace",
+    lastName: "Harris",
+    dateOfBirth: new Date("1995-01-24"),
+  },
+  {
+    id: "p8",
+    firstName: "Helen",
+    lastName: "Clark",
+    dateOfBirth: new Date("1982-12-02"),
+  },
+  {
+    id: "p9",
+    firstName: "Ivan",
+    lastName: "Lewis",
+    dateOfBirth: new Date("1998-07-08"),
+  },
+  {
+    id: "p10",
+    firstName: "Jack",
+    lastName: "Young",
+    dateOfBirth: new Date("2002-11-17"),
+  },
+  {
+    id: "p11",
+    firstName: "Kathy",
+    lastName: "Adams",
+    dateOfBirth: new Date("1973-09-05"),
+  },
+  {
+    id: "p12",
+    firstName: "Liam",
+    lastName: "Scott",
+    dateOfBirth: new Date("1999-02-18"),
+  },
+  {
+    id: "p13",
+    firstName: "Mona",
+    lastName: "Walker",
+    dateOfBirth: new Date("1986-04-12"),
+  },
+  {
+    id: "p14",
+    firstName: "Nancy",
+    lastName: "Lopez",
+    dateOfBirth: new Date("1983-08-14"),
+  },
+  {
+    id: "p15",
+    firstName: "Oscar",
+    lastName: "Martinez",
+    dateOfBirth: new Date("1994-09-23"),
   },
 ];
 
@@ -45,28 +125,105 @@ const initialAppointments: Appointment[] = [
     patientId: "p2",
     doctorId: "d1",
   },
+  {
+    id: "a3",
+    date: new Date(),
+    time: "02:00 PM",
+    patientId: "p3",
+    doctorId: "d1",
+  },
+  {
+    id: "a4",
+    date: new Date(),
+    time: "04:00 PM",
+    patientId: "p4",
+    doctorId: "d1",
+  },
+  {
+    id: "a5",
+    date: new Date(),
+    time: "08:30 AM",
+    patientId: "p5",
+    doctorId: "d1",
+  },
+  {
+    id: "a6",
+    date: new Date(),
+    time: "12:00 PM",
+    patientId: "p6",
+    doctorId: "d1",
+  },
+  {
+    id: "a7",
+    date: new Date(),
+    time: "01:30 PM",
+    patientId: "p7",
+    doctorId: "d1",
+  },
+  {
+    id: "a8",
+    date: new Date(),
+    time: "03:00 PM",
+    patientId: "p8",
+    doctorId: "d1",
+  },
+  {
+    id: "a9",
+    date: new Date(),
+    time: "09:00 AM",
+    patientId: "p9",
+    doctorId: "d1",
+  },
+  {
+    id: "a10",
+    date: new Date(),
+    time: "10:30 AM",
+    patientId: "p10",
+    doctorId: "d1",
+  },
+  {
+    id: "a11",
+    date: new Date(),
+    time: "12:15 PM",
+    patientId: "p11",
+    doctorId: "d1",
+  },
+  {
+    id: "a12",
+    date: new Date(),
+    time: "02:45 PM",
+    patientId: "p12",
+    doctorId: "d1",
+  },
+  {
+    id: "a13",
+    date: new Date(),
+    time: "04:30 PM",
+    patientId: "p13",
+    doctorId: "d1",
+  },
+  {
+    id: "a14",
+    date: new Date(),
+    time: "06:00 PM",
+    patientId: "p14",
+    doctorId: "d1",
+  },
+  {
+    id: "a15",
+    date: new Date(),
+    time: "07:30 PM",
+    patientId: "p15",
+    doctorId: "d1",
+  },
 ];
 
 export default function DoctorPage() {
   const [doctor, setDoctor] = useState<Doctor>(initialDoctor);
-  const [patients, setPatients] = useState<Patient[]>(initialPatients);
+  const [patients] = useState<Patient[]>(initialPatients);
   const [appointments, setAppointments] =
     useState<Appointment[]>(initialAppointments);
   const [isViewingDoctorDetails, setIsViewingDoctorDetails] = useState(false);
-
-  const [editingAppointmentId, setEditingAppointmentId] = useState<
-    string | null
-  >(null);
-  const [editingAppointmentTime, setEditingAppointmentTime] = useState("");
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
-    null
-  );
-  const [isEditingDoctor, setIsEditingDoctor] = useState(false);
-  const [doctorFirstName, setDoctorFirstName] = useState(doctor.firstName);
-  const [doctorLastName, setDoctorLastName] = useState(doctor.lastName);
-  const [doctorSpecialization, setDoctorSpecialization] = useState(
-    doctor.specialization
-  );
 
   const navbarItems: NavItem[] = [
     { label: "Home", href: "home" },
@@ -77,204 +234,6 @@ export default function DoctorPage() {
     setIsViewingDoctorDetails(href === "doctor-details");
   };
 
-  const handleEditAppointment = (appointment: Appointment) => {
-    setEditingAppointmentId(appointment.id);
-    setEditingAppointmentTime(appointment.time);
-    setSelectedPatientId(appointment.patientId);
-  };
-
-  const handleUpdateAppointment = () => {
-    if (!selectedPatientId || !editingAppointmentTime) return;
-
-    const updatedAppointments = appointments.map((appt) =>
-      appt.id === editingAppointmentId
-        ? {
-            ...appt,
-            time: editingAppointmentTime,
-            patientId: selectedPatientId,
-          }
-        : appt
-    );
-
-    setAppointments(updatedAppointments);
-    setEditingAppointmentId(null);
-    setEditingAppointmentTime("");
-    setSelectedPatientId(null);
-  };
-
-  const handleCancelAppointment = (appointmentId: string) => {
-    const updatedAppointments = appointments.filter(
-      (appointment) => appointment.id !== appointmentId
-    );
-    setAppointments(updatedAppointments);
-  };
-
-  const saveDoctorChanges = () => {
-    setDoctor({
-      ...doctor,
-      firstName: doctorFirstName,
-      lastName: doctorLastName,
-      specialization: doctorSpecialization,
-    });
-    setIsEditingDoctor(false);
-  };
-
-  const getPatientById = (patientId: string) =>
-    patients.find((p) => p.id === patientId);
-
-  const renderDoctorProfile = () => (
-    <Card className="p-4">
-      <CardHeader>
-        <CardTitle className="text-2xl">Doctor Profile</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {isEditingDoctor ? (
-          <div className="space-y-4">
-            <Input
-              type="text"
-              placeholder="First Name"
-              value={doctorFirstName}
-              onChange={(e) => setDoctorFirstName(e.target.value)}
-            />
-            <Input
-              type="text"
-              placeholder="Last Name"
-              value={doctorLastName}
-              onChange={(e) => setDoctorLastName(e.target.value)}
-            />
-            <Input
-              type="text"
-              placeholder="Specialization"
-              value={doctorSpecialization}
-              onChange={(e) => setDoctorSpecialization(e.target.value)}
-            />
-            <Button onClick={saveDoctorChanges}>Save</Button>
-            <Button
-              variant="secondary"
-              onClick={() => setIsEditingDoctor(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <>
-            <p className="text-lg">
-              <strong>Name:</strong> {doctor.firstName} {doctor.lastName}
-            </p>
-            <p className="text-lg">
-              <strong>Specialization:</strong> {doctor.specialization}
-            </p>
-            <Button onClick={() => setIsEditingDoctor(true)}>
-              Edit Doctor Information
-            </Button>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  const renderHome = () => (
-    <>
-      {/* Welcome Message */}
-      <h1 className="text-4xl font-bold text-center my-8">
-        Welcome to the Doctor Portal
-      </h1>
-
-      {/* Patients Section */}
-      <Card className="h-full">
-        <CardHeader>
-          <CardTitle>Patients List</CardTitle>
-        </CardHeader>
-        <CardContent className="text-left">
-          {patients.length > 0 ? (
-            <ul>
-              {patients.map((patient, index) => (
-                <li
-                  key={patient.id}
-                  className={`flex justify-between p-2 ${
-                    index % 2 === 0 ? "bg-gray-100" : "bg-white"
-                  }`}
-                >
-                  <span>
-                    {patient.firstName} {patient.lastName} - DOB:{" "}
-                    {patient.dateOfBirth.toLocaleDateString()}
-                  </span>
-                  <Button variant="link">View Patient Page</Button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No patients available.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Appointments Section */}
-      <Card className="p-4">
-        <CardHeader>
-          <CardTitle>Appointments</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {editingAppointmentId && (
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <Input
-                  type="time"
-                  value={editingAppointmentTime}
-                  onChange={(e) => setEditingAppointmentTime(e.target.value)}
-                />
-                <select
-                  onChange={(e) => setSelectedPatientId(e.target.value)}
-                  value={selectedPatientId || ""}
-                >
-                  <option value="">Select a Patient</option>
-                  {patients.map((patient) => (
-                    <option key={patient.id} value={patient.id}>
-                      {patient.firstName} {patient.lastName}
-                    </option>
-                  ))}
-                </select>
-                <Button onClick={handleUpdateAppointment}>
-                  Update Appointment
-                </Button>
-              </div>
-            </div>
-          )}
-          <ul>
-            {appointments.map((appointment) => {
-              const patient = getPatientById(appointment.patientId);
-              return (
-                <li
-                  key={appointment.id}
-                  className="flex justify-between p-2 bg-white max-w-[800px] mx-auto"
-                >
-                  <span>
-                    {appointment.time} -{" "}
-                    {patient
-                      ? `${patient.firstName} ${patient.lastName}`
-                      : "Unknown Patient"}
-                  </span>
-                  <Button
-                    variant="secondary"
-                    onClick={() => handleEditAppointment(appointment)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleCancelAppointment(appointment.id)}
-                  >
-                    Cancel
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        </CardContent>
-      </Card>
-    </>
-  );
-
   return (
     <div>
       <Navbar
@@ -282,9 +241,25 @@ export default function DoctorPage() {
         items={navbarItems}
         onNavigate={handleNavigation}
       />
-      <div className="p-6 space-y-6">
-        {isViewingDoctorDetails ? renderDoctorProfile() : renderHome()}
-      </div>
+      {isViewingDoctorDetails ? (
+        <DoctorProfile doctor={doctor} setDoctor={setDoctor} />
+      ) : (
+        <div className="text-center p-8">
+          <h1 className="text-4xl font-bold mb-8">
+            Welcome to the Doctor Portal
+          </h1>
+          <div className="flex justify-center space-x-6">
+            <PatientList patients={patients} />
+            <AppointmentList
+              appointments={appointments}
+              patients={patients}
+              setAppointments={setAppointments}
+            />
+          </div>
+          <Timetable appointments={appointments} patients={patients} />{" "}
+          {/* Pass patients here */}
+        </div>
+      )}
     </div>
   );
 }
