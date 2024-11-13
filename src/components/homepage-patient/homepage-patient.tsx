@@ -97,7 +97,6 @@ const navItems: NavItem[] = [
 export default function PatientPortal() {
   const { data, status, isLoading} = useFetchDoctors();
   const [currentPage, setCurrentPage] = useState("home");
-  const [doctors] = useState<Doctor[]>(dummyDoctors);
   const [medicines] = useState<Medicine[]>(dummyMedicines);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const params = useParams();

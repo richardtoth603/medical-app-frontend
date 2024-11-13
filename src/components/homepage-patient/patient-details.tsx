@@ -19,6 +19,13 @@ export function PatientDetails({ initialPatient }: PatientDetailsProps) {
   const [patient, setPatient] = useState<Patient>(initialPatient);
   const [isEditing, setIsEditing] = useState(false);
 
+  if(localStorage.getItem('firstName') !== null){
+    patient.firstName = localStorage.getItem('firstName') as string;
+  }
+  if(localStorage.getItem('lastName') !== null){
+    patient.lastName = localStorage.getItem('lastName') as string;
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPatient({ ...patient, [e.target.name]: e.target.value });
   };
@@ -42,10 +49,6 @@ export function PatientDetails({ initialPatient }: PatientDetailsProps) {
       <CardContent className="overflow-y-auto">
         <form onSubmit={handleSubmit} className="space-y-2">
           <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-            <Label htmlFor="id">ID</Label>
-            <Input id="id" name="id" value={patient.id} disabled />
-          </div>
-          <div className="grid grid-cols-[100px_1fr] items-center gap-2">
             <Label htmlFor="firstName">First Name</Label>
             <Input
               id="firstName"
@@ -64,25 +67,6 @@ export function PatientDetails({ initialPatient }: PatientDetailsProps) {
               onChange={handleInputChange}
               disabled={!isEditing}
             />
-          </div>
-          <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-            <Label htmlFor="dateOfBirth">Date of Birth</Label>
-            {isEditing ? (
-              <Input
-                id="dateOfBirth"
-                name="dateOfBirth"
-                type="date"
-                value={patient.dateOfBirth.toISOString().split("T")[0]}
-                onChange={(e) => handleDateChange(e.target.value)}
-              />
-            ) : (
-              <Input
-                id="dateOfBirth"
-                name="dateOfBirth"
-                value={patient.dateOfBirth.toLocaleDateString()}
-                disabled
-              />
-            )}
           </div>
         </form>
       </CardContent>

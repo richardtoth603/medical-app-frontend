@@ -249,7 +249,7 @@ export default function DoctorPage() {
             Welcome to the Doctor Portal
           </h1>
           <div className="flex justify-center space-x-6">
-            <PatientList patients={patients} />
+            <PatientList />
             <AppointmentList
               appointments={appointments}
               patients={patients}
