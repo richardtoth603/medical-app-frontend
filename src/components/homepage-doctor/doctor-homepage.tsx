@@ -1,6 +1,5 @@
 import { useState } from "react";
 import DoctorProfile from "./doctor-profile";
-import PatientList from "./doctor-patientList";
 import AppointmentList from "./doctor-appointmentList";
 import { Navbar } from "@/components/ui/navbar";
 import { NavItem } from "@/components/ui/navbar";
@@ -8,6 +7,10 @@ import { Patient } from "@/domain/models/Patient";
 import { Doctor } from "@/domain/models/Doctor";
 import { Appointment } from "@/domain/models/Appointment";
 import Timetable from "./doctor-timetable";
+import { useFetchPatients } from "@/hooks/doctorHooks";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
+import PatientScreen from "./patient-page";
 
 // Extended Fake Data
 const initialPatients: Patient[] = [
@@ -224,6 +227,9 @@ export default function DoctorPage() {
   const [appointments, setAppointments] =
     useState<Appointment[]>(initialAppointments);
   const [isViewingDoctorDetails, setIsViewingDoctorDetails] = useState(false);
+  const { data, status, isLoading } = useFetchPatients();
+  const [viewedPatient, setViewedPatient] = useState("");
+  const [currentPage, setCurrentPage] = useState("home");
 
   const navbarItems: NavItem[] = [
     { label: "Home", href: "home" },
@@ -232,34 +238,101 @@ export default function DoctorPage() {
 
   const handleNavigation = (href: string) => {
     setIsViewingDoctorDetails(href === "doctor-details");
+    setCurrentPage(href);
+    setViewedPatient("");
   };
 
-  return (
-    <div>
-      <Navbar
-        title="Doctor Portal"
-        items={navbarItems}
-        onNavigate={handleNavigation}
-      />
-      {isViewingDoctorDetails ? (
-        <DoctorProfile doctor={doctor} setDoctor={setDoctor} />
-      ) : (
-        <div className="text-center p-8">
-          <h1 className="text-4xl font-bold mb-8">
-            Welcome to the Doctor Portal
-          </h1>
-          <div className="flex justify-center space-x-6">
-            <PatientList />
-            <AppointmentList
-              appointments={appointments}
-              patients={patients}
-              setAppointments={setAppointments}
-            />
-          </div>
-          <Timetable appointments={appointments} patients={patients} />{" "}
-          {/* Pass patients here */}
+  const handleViewPatient = (patientId: string) => {
+    setViewedPatient(patientId);
+    setCurrentPage("patient");
+  }
+
+  switch (currentPage) {
+    case "patient":
+      return (
+        <><Navbar
+          title="Doctor Portal"
+          items={navbarItems}
+          onNavigate={handleNavigation}
+        />
+          <PatientScreen patientId={viewedPatient} />
+        </>
+      );
+    default:
+      return (
+        <div>
+          <Navbar
+            title="Doctor Portal"
+            items={navbarItems}
+            onNavigate={handleNavigation}
+          />
+          {isViewingDoctorDetails ? (
+            <DoctorProfile doctor={doctor} setDoctor={setDoctor} />
+          ) : (
+            <div className="text-center p-8">
+              <h1 className="text-4xl font-bold mb-8">
+                Welcome to the Doctor Portal
+              </h1>
+              <div className="flex justify-center space-x-6">
+                <Card className="h-[400px] w-[700px] flex-col">
+                  <CardHeader>
+                    <CardTitle>Patients List</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 overflow-hidden">
+                    {/* Scrollable area for patient list */}
+                    <div className="overflow-y-auto max-h-[300px]">
+                      {isLoading && <p>Loading...</p>}
+                      {status === "error" && <p>Error fetching patients</p>}
+                      {status === "success" && data && data.length === 0 && (
+                        <p>No doctors found</p>
+                      )}
+                      <ul className="space-y-2">
+                        {status === 'success' && data.map((patient) => (
+                          <li
+                            key={patient.id}
+                            className="flex justify-between items-center p-2 bg-gray-100 rounded-md"
+                          >
+                            <div>
+                              <span
+                                style={{
+                                  fontSize: "0.8em",
+                                  color: "gray",
+                                  display: "block",
+                                  textAlign: "left",
+                                }}
+                              >
+                                {patient.dateOfBirth.toLocaleDateString()}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "1em",
+                                  display: "block",
+                                  textAlign: "left",
+                                }}
+                              >
+                                {patient.firstName} {patient.lastName || "Unknown Patient"}
+                              </span>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button variant="link" onClick={() => { handleViewPatient(patient.id) }}>View Patient Page</Button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+                <AppointmentList
+                  appointments={appointments}
+                  patients={patients}
+                  setAppointments={setAppointments}
+                />
+              </div>
+              <Timetable appointments={appointments} patients={patients} />{" "}
+              {/* Pass patients here */}
+            </div>
+          )}
         </div>
-      )}
-    </div>
-  );
+      );
+  }
 }

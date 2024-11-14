@@ -11,46 +11,6 @@ import { useApplicationContext } from "@/context/ApplicationContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFetchDoctors } from "@/hooks/patientHooks";
 
-const dummyPatient: Patient = {
-  id: "P12345",
-  firstName: "Jane",
-  lastName: "Doe",
-  dateOfBirth: new Date(1985, 5, 15),
-};
-
-const dummyDoctors: Doctor[] = [
-  {
-    id: "D001",
-    firstName: "John",
-    lastName: "Smith",
-    specialization: "Cardiology",
-  },
-  {
-    id: "D002",
-    firstName: "Emma",
-    lastName: "Johnson",
-    specialization: "Neurology",
-  },
-  {
-    id: "D003",
-    firstName: "Michael",
-    lastName: "Brown",
-    specialization: "Pediatrics",
-  },
-  {
-    id: "D004",
-    firstName: "Sarah",
-    lastName: "Davis",
-    specialization: "Oncology",
-  },
-  {
-    id: "D005",
-    firstName: "David",
-    lastName: "Wilson",
-    specialization: "Orthopedics",
-  },
-];
-
 const dummyMedicines: Medicine[] = [
   {
     id: "M001",
@@ -98,7 +58,7 @@ export default function PatientPortal() {
   const { data, status, isLoading} = useFetchDoctors();
   const [currentPage, setCurrentPage] = useState("home");
   const [medicines] = useState<Medicine[]>(dummyMedicines);
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [selectedDoctor, setSelectedDoctor] = useState("");
   const params = useParams();
   const navigate = useNavigate();
 
@@ -118,27 +78,27 @@ export default function PatientPortal() {
 
   const handleNavigation = (href: string) => {
     setCurrentPage(href);
-    setSelectedDoctor(null);
+    setSelectedDoctor("");
   };
 
-  const handleViewDoctor = (doctor: Doctor) => {
+  const handleViewDoctor = (doctor: string) => {
     setSelectedDoctor(doctor);
   };
 
   const handleBackToList = () => {
-    setSelectedDoctor(null);
+    setSelectedDoctor("");
   };
 
   const renderContent = () => {
     if (selectedDoctor) {
       return (
-        <DoctorDetails doctor={selectedDoctor} onBack={handleBackToList} />
+        <DoctorDetails doctorId={selectedDoctor} onBack={handleBackToList} />
       );
     }
 
     switch (currentPage) {
       case "patient":
-        return <PatientDetails initialPatient={dummyPatient} />;
+        return <PatientDetails patientId={localStorage.getItem("role_id")?.toString() ? localStorage.getItem("role_id")?.toString()! : "" }/>;
       default:
         return (
           <div className="space-y-6">
@@ -175,7 +135,7 @@ export default function PatientPortal() {
                             variant="outline"
                             size="sm"
                             className="w-full"
-                            onClick={() => handleViewDoctor(doctor)}
+                            onClick={() => handleViewDoctor(doctor.id)}
                           >
                             View Doctor Page
                           </Button>

@@ -19,19 +19,22 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Doctor } from "@/domain/models/Doctor";
+import { useFetchDoctorById } from "@/hooks/patientHooks";
+import { stat } from "fs";
 
 interface DoctorDetailsProps {
-  doctor: Doctor;
+  doctorId: string;
   onBack: () => void;
 }
 
-export function DoctorDetails({ doctor, onBack }: DoctorDetailsProps) {
+export function DoctorDetails({ doctorId, onBack }: DoctorDetailsProps) {
   const [chatMessages, setChatMessages] = useState<
     { sender: string; message: string }[]
   >([]);
   const [newMessage, setNewMessage] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
+  const { data, isLoading, status } = useFetchDoctorById(doctorId);
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
@@ -56,7 +59,7 @@ export function DoctorDetails({ doctor, onBack }: DoctorDetailsProps) {
   const handleBookAppointment = () => {
     if (selectedDate && selectedTime) {
       alert(
-        `Appointment booked with Dr. ${doctor.lastName} on ${selectedDate} at ${selectedTime}`
+        `Appointment booked with Dr. ${data?.lastName} on ${selectedDate} at ${selectedTime}`
       );
       setSelectedDate("");
       setSelectedTime("");
@@ -72,51 +75,58 @@ export function DoctorDetails({ doctor, onBack }: DoctorDetailsProps) {
           <CardHeader>
             <CardTitle className="text-2xl font-bold">Doctor Details</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start space-x-4">
-              {/* Doctor Info Section */}
-              <div className="flex-grow space-y-4">
-                <div>
-                  <h3 className="font-semibold">Name:</h3>
-                  <p>
-                    {doctor.firstName} {doctor.lastName}
-                  </p>
+          {isLoading && <div>Loading...</div>}
+          {status === "error" && <div>Error fetching data</div>}
+          {status === "success" && data &&
+            <CardContent className="space-y-4">
+              <div className="flex items-start space-x-4">
+                {/* Doctor Info Section */}
+                <div className="flex-grow space-y-4">
+                  <div>
+                    <h3 className="font-semibold">Name:</h3>
+                    <p>
+                      {data.firstName} {data.lastName}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Specialization:</h3>
+                    <p>{data.specialization}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold">Specialization:</h3>
-                  <p>{doctor.specialization}</p>
+
+                {/* Image Section */}
+                <div className="w-36 h-36 rounded-lg overflow-hidden">
+                  <img
+                    src="src\components\homepage-patient\doctor_profiles\doctor.jpg"
+                    alt={`Dr. ${data.firstName} ${data.lastName}`}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
 
-              {/* Image Section */}
-              <div className="w-36 h-36 rounded-lg overflow-hidden">
-                <img
-                  src="src\components\homepage-patient\doctor_profiles\doctor.jpg"
-                  alt={`Dr. ${doctor.firstName} ${doctor.lastName}`}
-                  className="w-full h-full object-cover"
-                />
+              {/* About Section */}
+              <div>
+                <h3 className="font-semibold mb-2">About:</h3>
+                <p className="text-muted-foreground">
+                  Dr. {data.firstName} {data.lastName} is a highly skilled{" "}
+                  {data.specialization.toLowerCase()} specialist with years of
+                  experience in the field. They are dedicated to providing the
+                  best care for their patients and staying up-to-date with the
+                  latest medical advancements.
+                </p>
               </div>
-            </div>
-
-            {/* About Section */}
-            <div>
-              <h3 className="font-semibold mb-2">About:</h3>
-              <p className="text-muted-foreground">
-                Dr. {doctor.firstName} {doctor.lastName} is a highly skilled{" "}
-                {doctor.specialization.toLowerCase()} specialist with years of
-                experience in the field. They are dedicated to providing the
-                best care for their patients and staying up-to-date with the
-                latest medical advancements.
-              </p>
-            </div>
-          </CardContent>
+            </CardContent>}
         </Card>
 
         {/* Chat */}
         <Card>
+          {isLoading && <div>Loading...</div>}
+          {status === "error" && <div>Error fetching data</div>}
+          {status === "success" && data &&
+          <>
           <CardHeader>
             <CardTitle className="text-xl font-bold">
-              Chat with Dr. {doctor.lastName}
+              Chat with Dr. {data.lastName}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -124,9 +134,8 @@ export function DoctorDetails({ doctor, onBack }: DoctorDetailsProps) {
               {chatMessages.map((msg, index) => (
                 <div
                   key={index}
-                  className={`mb-2 ${
-                    msg.sender === "You" ? "text-right" : "text-left"
-                  }`}
+                  className={`mb-2 ${msg.sender === "You" ? "text-right" : "text-left"
+                    }`}
                 >
                   <span className="font-semibold">{msg.sender}: </span>
                   {msg.message}
@@ -143,6 +152,7 @@ export function DoctorDetails({ doctor, onBack }: DoctorDetailsProps) {
               <Button onClick={handleSendMessage}>Send</Button>
             </div>
           </CardContent>
+          </>}
         </Card>
       </div>
 

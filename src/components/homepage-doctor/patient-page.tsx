@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { useFetchPatientById } from '@/hooks/doctorHooks'
 
 interface Patient {
   id: string
@@ -10,7 +11,7 @@ interface Patient {
   dateOfBirth: Date
 }
 
-export default function PatientScreen() {
+export default function PatientScreen( { patientId }: { patientId: string } ) {
   const [patient] = useState<Patient>({
     id: '12345',
     firstName: 'John',
@@ -19,6 +20,8 @@ export default function PatientScreen() {
   })
   const [chatMessage, setChatMessage] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
+
+  const { data, isLoading, status } = useFetchPatientById(patientId)
 
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
@@ -53,9 +56,12 @@ export default function PatientScreen() {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Patient Screen</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Patient Details */}
+        {isLoading && <p>Loading...</p>}
+        {status === "error" && <p>Error fetching patient</p>}
+        {status === "success" && data && 
         <Card>
           <CardHeader>
             <CardTitle>Patient Details</CardTitle>
@@ -63,19 +69,19 @@ export default function PatientScreen() {
           <CardContent>
             <dl className="grid grid-cols-3 gap-4">
               <div className="col-span-1 font-semibold">ID:</div>
-              <div className="col-span-2">{patient.id}</div>
-              
+              <div className="col-span-2">{data.id}</div>
+
               <div className="col-span-1 font-semibold">First Name:</div>
-              <div className="col-span-2">{patient.firstName}</div>
-              
+              <div className="col-span-2">{data.firstName}</div>
+
               <div className="col-span-1 font-semibold">Last Name:</div>
-              <div className="col-span-2">{patient.lastName}</div>
-              
-              <div className="col-span-1 font-semibold">Date of Birth:</div>
-              <div className="col-span-2">{formatDate(patient.dateOfBirth)}</div>
+              <div className="col-span-2">{data.lastName}</div>
+
+              {/* <div className="col-span-1 font-semibold">Date of Birth:</div>
+              <div className="col-span-2">{formatDate(data.dateOfBirth)}</div> */}
             </dl>
           </CardContent>
-        </Card>
+        </Card>}
 
         {/* Chat Window */}
         <Card>
