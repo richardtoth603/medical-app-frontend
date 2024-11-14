@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Patient } from "@/domain/models/Patient";
 import { useFetchPatientById } from "@/hooks/doctorHooks";
 import { Upload, FileText } from "lucide-react";
+import { useAddDocument, useFetchDocumentsByPatientId } from "@/hooks/patientHooks";
 
 interface PatientDetailsProps {
   patientId: string;
@@ -21,6 +22,10 @@ interface PatientDetailsProps {
 export function PatientDetails({ patientId }: PatientDetailsProps) {
 
   const { data, isLoading, status } = useFetchPatientById(patientId);
+
+  const { mutate } = useAddDocument();
+
+  const { data: documents, isLoading: isDocumentsLoading, status: documentsStatus } = useFetchDocumentsByPatientId(patientId);
 
   const [patient, setPatient] = useState<Patient>(data ? data : { id: "", firstName: "", lastName: "", dateOfBirth: new Date() });
   const [isEditing, setIsEditing] = useState(false);
@@ -32,44 +37,43 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
     setPatient({ ...patient, [e.target.name]: e.target.value });
   };
 
-  const handleDateChange = (value: string) => {
-    const [year, month, day] = value.split("-").map(Number);
-    setPatient({ ...patient, dateOfBirth: new Date(year, month - 1, day) });
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsEditing(false);
     console.log("Updated patient:", patient);
   };
 
-  const handleFileUpload = useCallback((files: FileList | null) => {
+  const handleFileUpload = (files: FileList | null) => {
+    debugger;
     if (files) {
       const newPdfs = Array.from(files)
         .filter(file => file.type === 'application/pdf')
+      newPdfs.forEach(pdf => {
+        mutate({ file: pdf, patientId });
+      });
       setPdfs(prevPdfs => [...prevPdfs, ...newPdfs])
     }
-  }, [])
+  }
 
-  const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+  const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     setIsDragging(true)
-  }, [])
+  }
 
-  const onDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+  const onDragLeave =(event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     setIsDragging(false)
-  }, [])
+  }
 
-  const onDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+  const onDrop =(event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     setIsDragging(false)
     const files = event.dataTransfer.files
     handleFileUpload(files)
-  }, [handleFileUpload])
+  }
 
-  const handleDownload = useCallback((fileName: string) => {
-    const file = pdfs.find(pdf => pdf.name === fileName);
+  const handleDownload = (fileName: string) => {
+    const file = documents?.find(pdf => pdf.name === fileName);
     if (file) {
       const link = document.createElement('a');
       link.href = URL.createObjectURL(file);
@@ -78,7 +82,7 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
       link.click();
       document.body.removeChild(link);
     }
-  }, [pdfs]);
+  }
 
   return (
     <div className="container mx-auto p-4 ">
@@ -161,7 +165,9 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
             <div>
               <h3 className="text-lg font-semibold mb-2">Uploaded PDFs:</h3>
               <ul className="space-y-2">
-                {pdfs.map((pdf, index) => (
+                {isDocumentsLoading && <div>Loading...</div>}
+                {documentsStatus === "error" && <div>Error fetching data</div>}
+                {documentsStatus === 'success' && documents && documents.map((pdf, index) => (
                   <li key={index} className="flex items-center space-x-2">
                     <FileText size={20} />
                     <span className="cursor-pointer text-blue-500" onClick={() => handleDownload(pdf.name)}>
