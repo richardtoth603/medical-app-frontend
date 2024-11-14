@@ -9,6 +9,7 @@ export function MainPage() {
         if (!token) {
             navigate("/signin");
         }
+        //TODO: add navigation to the corresponding dashboard based on the user role and claims
     }, [navigate]);
 
     return (

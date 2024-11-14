@@ -38,6 +38,7 @@ export function MedicalAppComponent() {
     handleFileUpload(files)
   }, [handleFileUpload])
 
+
   return (
     <div className="flex flex-col">
       <header className="bg-primary text-primary-foreground p-4">
