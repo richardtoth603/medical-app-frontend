@@ -25,7 +25,7 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
   const [patient, setPatient] = useState<Patient>(data ? data : { id: "", firstName: "", lastName: "", dateOfBirth: new Date() });
   const [isEditing, setIsEditing] = useState(false);
 
-  const [pdfs, setPdfs] = useState<string[]>([])
+  const [pdfs, setPdfs] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +47,6 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
     if (files) {
       const newPdfs = Array.from(files)
         .filter(file => file.type === 'application/pdf')
-        .map(file => file.name)
       setPdfs(prevPdfs => [...prevPdfs, ...newPdfs])
     }
   }, [])
@@ -68,6 +67,18 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
     const files = event.dataTransfer.files
     handleFileUpload(files)
   }, [handleFileUpload])
+
+  const handleDownload = useCallback((fileName: string) => {
+    const file = pdfs.find(pdf => pdf.name === fileName);
+    if (file) {
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(file);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }, [pdfs]);
 
   return (
     <div className="container mx-auto p-4 ">
@@ -153,7 +164,9 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
                 {pdfs.map((pdf, index) => (
                   <li key={index} className="flex items-center space-x-2">
                     <FileText size={20} />
-                    <span>{pdf}</span>
+                    <span className="cursor-pointer text-blue-500" onClick={() => handleDownload(pdf.name)}>
+                      <span>{pdf.name}</span>
+                    </span>
                   </li>
                 ))}
               </ul>
