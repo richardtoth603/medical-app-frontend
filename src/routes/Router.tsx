@@ -4,6 +4,7 @@ import SignUp from "@/components/autorization-components/signup";
 import { MainPage } from "@/pages/MainPage";
 import { createBrowserRouter } from "react-router-dom";
 import Login from "@/components/autorization-components/signin";
+import PeriodTrackingCalendar from "@/components/patient-components/period-tracking-calendar";
 
 const routes = createBrowserRouter([
     {
@@ -15,6 +16,11 @@ const routes = createBrowserRouter([
             //     path: "/signin",
             //     element: <SignIn />,
             // },
+            {
+                // path: "/patientdashboard/:roleId/calendar",
+                path: "/calendar", //for testing purposes, the above rute will be the final one
+                element: <PeriodTrackingCalendar />,
+            },
             {
                 path: "/signin",
                 element: <Login />,
@@ -30,7 +36,7 @@ const routes = createBrowserRouter([
             {
                 path: "/doctordashboard/:roleId",
                 element: <DoctorPage />,
-            }
+            },
         ]
     }
 ]);
