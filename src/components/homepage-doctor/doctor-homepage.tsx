@@ -6,7 +6,7 @@ import { NavItem } from "@/components/ui/navbar";
 import { Patient } from "@/domain/models/Patient";
 import { Doctor } from "@/domain/models/Doctor";
 import { Appointment } from "@/domain/models/Appointment";
-import Timetable from "./doctor-timetable";
+import Timetable from "../ui/timetable";
 import { useFetchPatients } from "@/hooks/doctorHooks";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
@@ -245,16 +245,17 @@ export default function DoctorPage() {
   const handleViewPatient = (patientId: string) => {
     setViewedPatient(patientId);
     setCurrentPage("patient");
-  }
+  };
 
   switch (currentPage) {
     case "patient":
       return (
-        <><Navbar
-          title="Doctor Portal"
-          items={navbarItems}
-          onNavigate={handleNavigation}
-        />
+        <>
+          <Navbar
+            title="Doctor Portal"
+            items={navbarItems}
+            onNavigate={handleNavigation}
+          />
           <PatientScreen patientId={viewedPatient} />
         </>
       );
@@ -287,37 +288,46 @@ export default function DoctorPage() {
                         <p>No doctors found</p>
                       )}
                       <ul className="space-y-2">
-                        {status === 'success' && data.map((patient) => (
-                          <li
-                            key={patient.id}
-                            className="flex justify-between items-center p-2 bg-gray-100 rounded-md"
-                          >
-                            <div>
-                              <span
-                                style={{
-                                  fontSize: "0.8em",
-                                  color: "gray",
-                                  display: "block",
-                                  textAlign: "left",
-                                }}
-                              >
-                                {patient.dateOfBirth.toLocaleDateString()}
-                              </span>
-                              <span
-                                style={{
-                                  fontSize: "1em",
-                                  display: "block",
-                                  textAlign: "left",
-                                }}
-                              >
-                                {patient.firstName} {patient.lastName || "Unknown Patient"}
-                              </span>
-                            </div>
-                            <div className="flex space-x-2">
-                              <Button variant="link" onClick={() => { handleViewPatient(patient.id) }}>View Patient Page</Button>
-                            </div>
-                          </li>
-                        ))}
+                        {status === "success" &&
+                          data.map((patient) => (
+                            <li
+                              key={patient.id}
+                              className="flex justify-between items-center p-2 bg-gray-100 rounded-md"
+                            >
+                              <div>
+                                <span
+                                  style={{
+                                    fontSize: "0.8em",
+                                    color: "gray",
+                                    display: "block",
+                                    textAlign: "left",
+                                  }}
+                                >
+                                  {patient.dateOfBirth.toLocaleDateString()}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: "1em",
+                                    display: "block",
+                                    textAlign: "left",
+                                  }}
+                                >
+                                  {patient.firstName}{" "}
+                                  {patient.lastName || "Unknown Patient"}
+                                </span>
+                              </div>
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="link"
+                                  onClick={() => {
+                                    handleViewPatient(patient.id);
+                                  }}
+                                >
+                                  View Patient Page
+                                </Button>
+                              </div>
+                            </li>
+                          ))}
                       </ul>
                     </div>
                   </CardContent>
