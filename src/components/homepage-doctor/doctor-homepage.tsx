@@ -6,7 +6,7 @@ import { NavItem } from "@/components/ui/navbar";
 import { Patient } from "@/domain/models/Patient";
 import { Doctor } from "@/domain/models/Doctor";
 import { Appointment } from "@/domain/models/Appointment";
-import Timetable from "../ui/timetable";
+import Timetable from "../ui/doctor-timetable";
 import { useFetchPatients } from "@/hooks/doctorHooks";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";

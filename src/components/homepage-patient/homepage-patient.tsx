@@ -158,7 +158,7 @@ export default function PatientPortal() {
                       <p>No doctors found</p>
                     )}
                     {status === "success" &&
-                      data?.map((doctor) => (
+                      data.map((doctor) => (
                         <div
                           key={doctor.id}
                           className="mb-4 p-3 bg-secondary rounded-lg"
