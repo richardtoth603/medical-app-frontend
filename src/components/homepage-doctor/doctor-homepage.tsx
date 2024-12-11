@@ -275,13 +275,13 @@ export default function DoctorPage() {
                 Welcome to the Doctor Portal
               </h1>
               <div className="flex justify-center space-x-6">
-                <Card className="h-[400px] w-[700px] flex-col">
+                <Card className="h-[500px] w-[700px] flex-col">
                   <CardHeader>
                     <CardTitle>Patients List</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1 overflow-hidden">
                     {/* Scrollable area for patient list */}
-                    <div className="overflow-y-auto max-h-[300px]">
+                    <div className="overflow-y-auto max-h-[370px]">
                       {isLoading && <p>Loading...</p>}
                       {status === "error" && <p>Error fetching patients</p>}
                       {status === "success" && data && data.length === 0 && (

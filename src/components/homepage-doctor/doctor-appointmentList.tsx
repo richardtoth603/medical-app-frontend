@@ -86,7 +86,7 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
 
   return (
     <>
-      <Card className="h-[400px] w-[700px] flex-col">
+      <Card className="h-[500px] w-[700px] flex-col">
         <CardHeader>
           <CardTitle>Appointments</CardTitle>
         </CardHeader>
@@ -136,7 +136,7 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
               </div>
             </div>
           )}
-          <div className="overflow-y-auto max-h-[300px]">
+          <div className="overflow-y-auto max-h-[370px]">
             {appointments.length > 0 ? (
               <ul className="space-y-2">
                 {appointments.map((appointment) => {
