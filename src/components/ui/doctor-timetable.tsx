@@ -1,7 +1,7 @@
 import { Appointment } from "@/domain/models/Appointment";
 import { Patient } from "@/domain/models/Patient";
 import { useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "./button";
 
 // Helper function to normalize the date (set time to 00:00:00) for comparison
 const normalizeDate = (date: Date) => {

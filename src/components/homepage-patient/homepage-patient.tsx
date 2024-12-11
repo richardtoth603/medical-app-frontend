@@ -55,7 +55,7 @@ const navItems: NavItem[] = [
 ];
 
 export default function PatientPortal() {
-  const { data, status, isLoading} = useFetchDoctors();
+  const { data, status, isLoading } = useFetchDoctors();
   const [currentPage, setCurrentPage] = useState("home");
   const [medicines] = useState<Medicine[]>(dummyMedicines);
   const [selectedDoctor, setSelectedDoctor] = useState("");
@@ -64,7 +64,10 @@ export default function PatientPortal() {
 
   // check if the user is authorized to view this page
   useEffect(() => {
-    if (localStorage.getItem("token") === null || localStorage.getItem("token") === undefined) {
+    if (
+      localStorage.getItem("token") === null ||
+      localStorage.getItem("token") === undefined
+    ) {
       navigate("/signup");
     }
     //TODO: technically we should check for the user ID here, instead of the roleId
@@ -98,7 +101,15 @@ export default function PatientPortal() {
 
     switch (currentPage) {
       case "patient":
-        return <PatientDetails patientId={localStorage.getItem("role_id")?.toString() ? localStorage.getItem("role_id")?.toString()! : "" }/>;
+        return (
+          <PatientDetails
+            patientId={
+              localStorage.getItem("role_id")?.toString()
+                ? localStorage.getItem("role_id")?.toString()!
+                : ""
+            }
+          />
+        );
       default:
         return (
           <div className="space-y-6">
@@ -119,29 +130,30 @@ export default function PatientPortal() {
                     {status === "success" && data && data.length === 0 && (
                       <p>No doctors found</p>
                     )}
-                    {status === 'success' && data.map((doctor) => (
-                      <div
-                        key={doctor.id}
-                        className="mb-4 p-3 bg-secondary rounded-lg"
-                      >
-                        <h3 className="font-medium">
-                          {doctor.firstName} {doctor.lastName}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Specialization: {doctor.specialization}
-                        </p>
-                        <div className="mt-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full"
-                            onClick={() => handleViewDoctor(doctor.id)}
-                          >
-                            View Doctor Page
-                          </Button>
+                    {status === "success" &&
+                      data.map((doctor) => (
+                        <div
+                          key={doctor.id}
+                          className="mb-4 p-3 bg-secondary rounded-lg"
+                        >
+                          <h3 className="font-medium">
+                            {doctor.firstName} {doctor.lastName}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            Specialization: {doctor.specialization}
+                          </p>
+                          <div className="mt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => handleViewDoctor(doctor.id)}
+                            >
+                              View Doctor Page
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </CardContent>
               </Card>
