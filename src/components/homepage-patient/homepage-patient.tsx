@@ -230,7 +230,7 @@ export default function PatientPortal() {
 
             {/* Timetable Section */}
             <div className="mt-6">
-              <h3 className="text-xl font-semibold mb-4">Your Appointment</h3>
+              <h3 className="text-xl font-semibold mb-4">Your Appointments</h3>
               <table className="table-auto w-full border border-gray-300">
                 <thead>
                   <tr className="bg-gray-100">
