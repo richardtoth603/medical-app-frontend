@@ -2,6 +2,29 @@ import React, { useState, useEffect } from "react";
 import { Appointment } from "@/domain/models/Appointment";
 import { Button } from "@/components/ui/button";
 
+// Helper function to normalize the date (set time to 00:00:00) for comparison
+const normalizeDate = (date: Date) => {
+  const normalizedDate = new Date(date);
+  normalizedDate.setHours(0, 0, 0, 0); // Set to midnight to ignore the time
+  return normalizedDate;
+};
+
+// Function to get the date for a specific day of the current week
+const getDateForDayOfWeek = (dayOfWeek: number, currentDate: Date) => {
+  const date = new Date(currentDate);
+  date.setDate(date.getDate() - date.getDay() + dayOfWeek); // Adjust for correct day of week
+  return date.toLocaleDateString();
+};
+
+const getMondayOfCurrentWeek = (date: Date) => {
+  const monday = new Date(date);
+  const day = monday.getDay();
+  const diff = day === 0 ? -6 : 1 - day; // Adjust for Sunday (day 0) being treated as the last day
+  monday.setDate(monday.getDate() + diff);
+  monday.setHours(0, 0, 0, 0); // Normalize to midnight
+  return monday;
+};
+
 interface AppointmentTimetableProps {
   doctorId: string;
   onBookAppointment: (date: string, time: string) => void;
@@ -13,7 +36,9 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   onBookAppointment,
   newlyBookedAppointment,
 }) => {
-  const [currentWeekStartDate, setCurrentWeekStartDate] = useState(new Date());
+  const [currentWeekStartDate, setCurrentWeekStartDate] = useState(
+    getMondayOfCurrentWeek(new Date())
+  );
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<{
     date: string;
@@ -56,12 +81,6 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
     return `${hour.toString().padStart(2, "0")}:${minute === 0 ? "00" : "30"}`;
   });
 
-  const getDateForDayOfWeek = (dayOfWeek: number) => {
-    const date = new Date(currentWeekStartDate);
-    date.setDate(date.getDate() - date.getDay() + dayOfWeek);
-    return date.toISOString().split("T")[0];
-  };
-
   const isSlotAvailable = (date: string, time: string) => {
     return (
       !appointments.some(
@@ -78,13 +97,13 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   const goToPreviousWeek = () => {
     const prevWeekStartDate = new Date(currentWeekStartDate);
     prevWeekStartDate.setDate(currentWeekStartDate.getDate() - 7);
-    setCurrentWeekStartDate(prevWeekStartDate);
+    setCurrentWeekStartDate(getMondayOfCurrentWeek(prevWeekStartDate));
   };
 
   const goToNextWeek = () => {
     const nextWeekStartDate = new Date(currentWeekStartDate);
     nextWeekStartDate.setDate(currentWeekStartDate.getDate() + 7);
-    setCurrentWeekStartDate(nextWeekStartDate);
+    setCurrentWeekStartDate(getMondayOfCurrentWeek(nextWeekStartDate));
   };
 
   const handleSlotClick = (date: string, time: string) => {
@@ -102,6 +121,9 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
     }
   };
 
+  const nextWeekEndDate = new Date(currentWeekStartDate);
+  nextWeekEndDate.setDate(currentWeekStartDate.getDate() + 4);
+
   return (
     <div className="mt-6">
       <h2 className="text-2xl font-bold mb-4">Available Appointments</h2>
@@ -111,9 +133,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
         </Button>
         <span className="text-lg font-semibold">
           {currentWeekStartDate.toLocaleDateString()} -{" "}
-          {new Date(
-            currentWeekStartDate.getTime() + 6 * 24 * 60 * 60 * 1000
-          ).toLocaleDateString()}
+          {nextWeekEndDate.toLocaleDateString()}
         </span>
         <Button onClick={goToNextWeek} variant="outline">
           Next Week
@@ -136,7 +156,10 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
               <tr key={time}>
                 <td className="border p-2">{time}</td>
                 {daysOfWeek.map((_, index) => {
-                  const date = getDateForDayOfWeek(index + 1);
+                  const date = getDateForDayOfWeek(
+                    index + 1,
+                    currentWeekStartDate
+                  );
                   const available = isSlotAvailable(date, time);
                   return (
                     <td
