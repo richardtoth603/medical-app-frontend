@@ -1,3 +1,4 @@
+import { ChatMessage } from "@/domain/models/ChatMessage";
 import { Doctor } from "@/domain/models/Doctor";
 import { Patient } from "@/domain/models/Patient";
 
@@ -8,6 +9,8 @@ export class PatientLocalUrls {
     static readonly getDoctorById = "https://localhost:7062/Doctors/GetDoctorById/";
     static readonly getDocumentsByPatientId = "https://localhost:7062/Document/GetDocumentByPatientId/";
     static readonly addDocument = "https://localhost:7062/Document/AddDocument";
+    static readonly getMessagesById = "https://localhost:7062/Messages/GetMessagesByIDs";
+    static readonly sendMessage = "https://localhost:7062/Messages/SendMessage";
 }
 
 export class AppService {
@@ -167,6 +170,56 @@ export class AppService {
     
         if (!response.ok) {
             throw new Error("Unable to upload document");
+        }
+    }
+
+    public static async getMessagesByIDs(doctorID: string, patientID: string): Promise<ChatMessage[]>{
+        const response = await fetch(`${PatientLocalUrls.getMessagesById}/${doctorID}/${patientID}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+        });
+
+        if(response.ok){
+            const data = await response.json();
+
+            return data.records.map((message: any) => {
+                return{
+                    id: message.id,
+                    doctorID: message.doctorID,
+                    content: message.content,
+                    patientId: message.patientId,
+                    sentAt: new Date(message.sentAt)
+                }
+            }) as ChatMessage[];
+        } else{
+            throw new Error("Unable to fetch messages");
+        }
+    }
+
+    public static async sendMessage(message: Omit<ChatMessage, 'id' | 'sentAt'>): Promise<ChatMessage> {
+        const response = await fetch(PatientLocalUrls.sendMessage, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify(message),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return {
+                id: data.id,
+                doctorID: data.doctorID,
+                content: data.content,
+                patientId: data.patientId,
+                sentAt: new Date(data.sentAt)
+            } as ChatMessage;
+        } else {
+            throw new Error("Unable to send message");
         }
     }
 }
