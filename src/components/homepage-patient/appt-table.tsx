@@ -3,13 +3,6 @@ import { Appointment } from "@/domain/models/Appointment";
 import { Button } from "@/components/ui/button";
 import { useAddAppointment } from "@/hooks/patientHooks"; // Import the hook
 
-// Helper function to normalize the date (set time to 00:00:00) for comparison
-const normalizeDate = (date: Date) => {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(0, 0, 0, 0); // Set to midnight to ignore the time
-  return normalizedDate;
-};
-
 // Function to get the date for a specific day of the current week
 const getDateForDayOfWeek = (dayOfWeek: number, currentDate: Date) => {
   const date = new Date(currentDate);
@@ -28,11 +21,13 @@ const getMondayOfCurrentWeek = (date: Date) => {
 
 interface AppointmentTimetableProps {
   doctorId: string;
+  onBookAppointment: (date: string, time: string) => void;
   newlyBookedAppointment: { date: string; time: string } | null;
 }
 
 const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   doctorId,
+  onBookAppointment,
   newlyBookedAppointment,
 }) => {
   const [currentWeekStartDate, setCurrentWeekStartDate] = useState(
@@ -72,7 +67,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
         },
       ]);
     }
-  }, [newlyBookedAppointment, doctorId]);
+  }, [newlyBookedAppointment, doctorId]); // Ensure this runs when the newly booked appointment changes
 
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   const timeSlots = Array.from({ length: 20 }, (_, i) => {

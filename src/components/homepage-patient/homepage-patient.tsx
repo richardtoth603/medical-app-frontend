@@ -4,40 +4,12 @@ import { PatientDetails } from "./patient-details";
 import DoctorDetails from "./doctors-page-patient-pov";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Patient } from "@/domain/models/Patient";
-import { Doctor } from "@/domain/models/Doctor";
-import { Appointment } from "@/domain/models/Appointment";
 import { Medicine } from "@/domain/models/Medicine";
-import { useApplicationContext } from "@/context/ApplicationContext";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useFetchDoctors,
   useFetchAppointmentsByPatientId,
 } from "@/hooks/patientHooks";
-
-const dummyAppointments: Appointment[] = [
-  {
-    id: "A001",
-    date: new Date("2024-12-12"),
-    time: "10:00 AM",
-    patientId: "P001",
-    doctorId: "a7ca8a79-4dd4-42bd-bd6e-77f6c1c0423b",
-  },
-  {
-    id: "A002",
-    date: new Date("2024-12-13"),
-    time: "2:00 PM",
-    patientId: "P001",
-    doctorId: "830085f0-a1af-434a-ace7-0d378fda0937",
-  },
-  {
-    id: "A003",
-    date: new Date("2024-12-14"),
-    time: "11:30 AM",
-    patientId: "P001",
-    doctorId: "D003",
-  },
-];
 
 const dummyMedicines: Medicine[] = [
   {
