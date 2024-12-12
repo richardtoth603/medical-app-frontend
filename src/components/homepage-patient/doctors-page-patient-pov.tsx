@@ -7,7 +7,6 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -22,6 +21,9 @@ import { useFetchDoctorById } from "@/hooks/patientHooks";
 import { useFetchMessages, useSendMessage } from "@/hooks/chatMessageHooks";
 import dayjs from 'dayjs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Doctor } from "@/domain/models/Doctor";
+import { useFetchDoctorById } from "@/hooks/patientHooks";
+import AppointmentTimetable from "@/components/homepage-patient/appt-table";
 
 interface DoctorDetailsProps {
   doctorId: string;
@@ -38,6 +40,14 @@ export function DoctorDetails({ doctorId, patientId, onBack }: DoctorDetailsProp
   const { data: messages, isLoading: isLoadingMessages } = useFetchMessages(doctorId, patientId);
   const sendMessageMutation = useSendMessage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { data, isLoading, status } = useFetchDoctorById(doctorId);
+
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [appointmentConfirmation, setAppointmentConfirmation] = useState("");
+  const [newlyBookedAppointment, setNewlyBookedAppointment] = useState<{
+    date: string;
+    time: string;
+  } | null>(null);
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
@@ -47,13 +57,29 @@ export function DoctorDetails({ doctorId, patientId, onBack }: DoctorDetailsProp
         content: newMessage,
       });
       setNewMessage("");
-    }
-  };
 
   const handleBookAppointment = () => {
     if (selectedDate && selectedTime) {
       setIsConfirmModalOpen(true);
     }
+      setTimeout(() => {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            sender: "Doctor",
+            message: "Thank you for your message. How can I help you today?",
+          },
+        ]);
+      }, 1000);
+    }
+  };
+
+  const handleBookAppointment = (date: string, time: string) => {
+    setAppointmentConfirmation(
+      `Appointment booked with Dr. ${data?.lastName} on ${date} at ${time}`
+    );
+    setShowConfirmation(true);
+    setNewlyBookedAppointment({ date, time });
   };
 
   const confirmAppointment = () => {
@@ -70,7 +96,7 @@ export function DoctorDetails({ doctorId, patientId, onBack }: DoctorDetailsProp
   }, [messages]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-8">
+    <div className="w-full max-w-7xl mx-auto space-y-8 relative">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Doctor Details */}
         <Card>
@@ -82,7 +108,6 @@ export function DoctorDetails({ doctorId, patientId, onBack }: DoctorDetailsProp
           {doctorStatus === "success" && doctor && (
             <CardContent className="space-y-4">
               <div className="flex items-start space-x-4">
-                {/* Doctor Info Section */}
                 <div className="flex-grow space-y-4">
                   <div>
                     <h3 className="font-semibold">Name:</h3>
@@ -95,8 +120,6 @@ export function DoctorDetails({ doctorId, patientId, onBack }: DoctorDetailsProp
                     <p>{doctor.specialization}</p>
                   </div>
                 </div>
-
-                {/* Image Section */}
                 <div className="w-36 h-36 rounded-lg overflow-hidden">
                   <img
                     src="/placeholder.svg?height=144&width=144"
@@ -105,8 +128,6 @@ export function DoctorDetails({ doctorId, patientId, onBack }: DoctorDetailsProp
                   />
                 </div>
               </div>
-
-              {/* About Section */}
               <div>
                 <h3 className="font-semibold mb-2">About:</h3>
                 <p className="text-muted-foreground">
@@ -121,7 +142,6 @@ export function DoctorDetails({ doctorId, patientId, onBack }: DoctorDetailsProp
           )}
         </Card>
 
-        {/* Chat */}
         <Card>
           {isLoadingDoctor && <div>Loading...</div>}
           {doctorStatus === "error" && <div>Error fetching data</div>}
@@ -179,70 +199,31 @@ export function DoctorDetails({ doctorId, patientId, onBack }: DoctorDetailsProp
         </Card>
       </div>
 
-      {/* Appointment Booking */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">
-            Book an Appointment
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="date">Select Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="time">Select Time</Label>
-              <Select value={selectedTime} onValueChange={setSelectedTime}>
-                <SelectTrigger id="time">
-                  <SelectValue placeholder="Select time" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="09:00">09:00 AM</SelectItem>
-                  <SelectItem value="10:00">10:00 AM</SelectItem>
-                  <SelectItem value="11:00">11:00 AM</SelectItem>
-                  <SelectItem value="14:00">02:00 PM</SelectItem>
-                  <SelectItem value="15:00">03:00 PM</SelectItem>
-                  <SelectItem value="16:00">04:00 PM</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2 mt-4">
-            <Checkbox id="terms" />
-            <Label htmlFor="terms">I agree to the terms and conditions</Label>
-          </div>
-          <Button onClick={handleBookAppointment} className="mt-4">
-            Book Appointment
-          </Button>
-        </CardContent>
-      </Card>
+      <AppointmentTimetable
+        doctorId={doctorId}
+        onBookAppointment={handleBookAppointment}
+        newlyBookedAppointment={newlyBookedAppointment}
+      />
 
       <CardFooter>
         <Button onClick={onBack} variant="outline">
           Back
         </Button>
       </CardFooter>
-      <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Appointment</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to book an appointment with Dr. {doctor?.lastName} on {selectedDate} at {selectedTime}?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>Cancel</Button>
-            <Button onClick={confirmAppointment}>Confirm</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full m-4">
+            <h3 className="text-lg font-semibold mb-4">
+              Appointment Confirmed
+            </h3>
+            <p>{appointmentConfirmation}</p>
+            <div className="mt-4 flex justify-end">
+              <Button onClick={() => setShowConfirmation(false)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

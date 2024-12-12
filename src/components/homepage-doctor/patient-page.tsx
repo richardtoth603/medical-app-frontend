@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +12,38 @@ import dayjs from 'dayjs'
 
 export default function PatientScreen({ patientId, doctorId }: { patientId: string; doctorId: string }) {
   const [newMessage, setNewMessage] = useState('')
+import ReactPDF, { Document, Page, Text, usePDF, View } from '@react-pdf/renderer'
+
+interface DocumentData {
+  firstName: string;
+  lastName: string;
+  cnp: string;
+  age: string;
+  anamnesis: string;
+  diagnosis: string;
+}
+
+export default function PatientScreen({ patientId }: { patientId: string }) {
+  const [chatMessage, setChatMessage] = useState('')
+  const [documentData, setDocumentData] = useState<DocumentData>({
+    firstName: '',
+    lastName: '',
+    cnp: '',
+    age: '',
+    anamnesis: '',
+    diagnosis: ''
+  })
+
+  const MyDocument = (
+    <Document>
+      <Page size="A4">
+        <View>
+          <Text>Some text</Text>
+        </View>
+      </Page>
+    </Document>
+  );
+  const [instance, updateInstance] = usePDF({ document: MyDocument });
   const [pdfs, setPdfs] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
 
@@ -30,6 +62,70 @@ export default function PatientScreen({ patientId, doctorId }: { patientId: stri
       setPdfs(prevPdfs => [...prevPdfs, ...newPdfs])
     }
   }
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target
+    setDocumentData(prevData => ({
+      ...prevData,
+      [name]: value
+    }))
+  }
+
+  useEffect(() => {
+    const MedicalLetter = (
+      <Document>
+        <Page size="A4" style={{flexDirection:"column", margin:"20px"}}>
+          <View style={{justifyContent:"center", flexDirection:"column", alignItems: "center", backgroundColor:"#cccccc", margin:"50px", padding: "20px"}}>
+            <Text style={{textDecoration:"underline", fontWeight:"extrabold", fontSize:"30px", textAlign:"center"}}>Medical Letter</Text>            
+          </View>
+          <View style={{flexDirection:"row", justifyContent:"flex-start", marginBottom:"10px"}}>
+            <Text style={{fontWeight:"bold", fontSize:"20px", textAlign:"center"}}>First Name: </Text>
+            <Text style={{fontSize:"20px", textAlign:"center"}}>{documentData.firstName}</Text>
+          </View>
+          <View style={{flexDirection:"row", justifyContent:"flex-start", marginBottom:"10px"}}>
+            <Text style={{fontWeight:"bold", fontSize:"20px", textAlign:"center"}}>Last Name: </Text>
+            <Text style={{fontSize:"20px", textAlign:"center"}}>{documentData.lastName}</Text>
+          </View>
+          <View style={{flexDirection:"row", justifyContent:"flex-start", marginBottom:"10px"}}>
+            <Text style={{fontWeight:"bold", fontSize:"20px", textAlign:"center"}}>CNP: </Text>
+            <Text style={{fontSize:"20px", textAlign:"center"}}>{documentData.cnp}</Text>
+          </View>
+          <View style={{flexDirection:"row", justifyContent:"flex-start", marginBottom:"10px"}}>
+            <Text style={{fontWeight:"bold", fontSize:"20px", textAlign:"center"}}>Age: </Text>
+            <Text style={{fontSize:"20px", textAlign:"center"}}>{documentData.age}</Text>
+          </View>
+          <View style={{flexDirection:"row", justifyContent:"flex-start", marginBottom:"10px"}}>
+            <Text style={{fontWeight:"bold", fontSize:"20px", textAlign:"center"}}>Anamnesis: </Text>
+            <Text style={{fontSize:"20px", textAlign:"center"}}>{documentData.anamnesis}</Text>
+          </View>
+          <View style={{flexDirection:"row", justifyContent:"flex-start", marginBottom:"10px"}}>
+            <Text style={{fontWeight:"bold", fontSize:"20px"}}>Diagnosis: </Text>
+            <Text style={{fontSize:"20px", textAlign:"center"}}>{documentData.diagnosis}</Text>
+          </View>
+        </Page>
+      </Document>
+    );
+    updateInstance(MedicalLetter);
+  }
+  , [documentData, updateInstance]);
+
+  const handleFileCreationSubmit = (event: React.FormEvent) => {
+    event.preventDefault()
+    console.log('Document Data:', documentData)
+
+    if(instance.blob) {
+      const file = new File([instance.blob], 'test.pdf', { type: 'application/pdf' });
+      mutate({ file, patientId });
+    }
+    //clear the form
+    setDocumentData({
+      firstName: '',
+      lastName: '',
+      cnp: '',
+      age: '',
+      anamnesis: '',
+      diagnosis: ''
+    })
+  }
 
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
@@ -47,6 +143,7 @@ export default function PatientScreen({ patientId, doctorId }: { patientId: stri
     const files = event.dataTransfer.files
     handleFileUpload(files)
   }
+
 
   const handleDownload = (fileName: string) => {
     const file = documents?.find(pdf => pdf.name === fileName)
@@ -151,8 +248,46 @@ export default function PatientScreen({ patientId, doctorId }: { patientId: stri
       </div>
 
       <div className="m-6" />
-
-      {/* Prescription Manager */}
+      {/* Create Document Form */}
+      <Card className="shadow-md overflow-hidden h-full">
+        <CardHeader>
+          <CardTitle>Create Document</CardTitle>
+          <CardDescription>Fill out the form to create a new medical letter</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleFileCreationSubmit}>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="document-firstname">First Name</Label>
+                <Input name="firstName" id="document-firstname" type="text" placeholder="Patient's First Name" onChange={handleInputChange} value={documentData.firstName} required/>
+              </div>
+              <div>
+                <Label htmlFor="document-lastname">Last Name</Label>
+                <Input name="lastName" onChange={handleInputChange} value={documentData.lastName} id="document-lastname" type="text" placeholder="Patient's Last Name" required />
+              </div>
+              <div>
+                <Label htmlFor="document-cnp">CNP</Label>
+                <Input name="cnp" onChange={handleInputChange} value={documentData.cnp} id="document-cnp" type="text" placeholder="Patient's CNP" required />
+              </div>
+              <div>
+                <Label htmlFor="document-age">Age</Label>
+                <Input name="age" onChange={handleInputChange} value={documentData.age} id="document-age" type="text" placeholder="Patient's Age" required />
+              </div>
+              <div>
+                <Label htmlFor="document-anamnesis">Anamnesis</Label>
+                <Input name="anamnesis" onChange={handleInputChange} value={documentData.anamnesis} id="document-anamnesis" type="text" placeholder="Anamnesis" required />
+              </div>
+              <div>
+                <Label htmlFor="document-diagnosis">Diagnosis</Label>
+                <Input name="diagnosis" onChange={handleInputChange} value={documentData.diagnosis} id="document-diagnosis" type="text" placeholder="Diagnosis" required />
+              </div>
+              <Button type="submit">Create Document</Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+      <div className="m-6" />
+      {/* Upload Medical Documents */}
       <Card className="shadow-md overflow-hidden h-full">
         <CardHeader>
           <CardTitle>Upload Medical Documents</CardTitle>
