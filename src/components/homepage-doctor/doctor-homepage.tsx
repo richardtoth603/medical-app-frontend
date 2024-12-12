@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DoctorProfile from "./doctor-profile";
 import AppointmentList from "./doctor-appointmentList";
 import { Navbar } from "@/components/ui/navbar";
@@ -6,19 +6,21 @@ import { NavItem } from "@/components/ui/navbar";
 import { Doctor } from "@/domain/models/Doctor";
 import Timetable from "../ui/doctor-timetable";
 import { useFetchPatients, useFetchAppointments } from "@/hooks/doctorHooks";
+import { useFetchDoctorById } from "@/hooks/patientHooks";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import PatientScreen from "./patient-page";
 
-const initialDoctor: Doctor = {
-  id: "830085f0-a1af-434a-ace7-0d378fda0937",
-  firstName: "Dr. John",
-  lastName: "Doe",
-  specialization: "Cardiology",
-};
-
 export default function DoctorPage() {
-  const [doctor, setDoctor] = useState<Doctor>(initialDoctor);
+  const doctorId = localStorage.getItem("role_id");
+  const [doctor, setDoctor] = useState<Doctor>({} as Doctor);
+  const {
+    data: fetchedDoctor,
+    status: doctorStatus,
+    isLoading: isDoctorLoading,
+    error: doctorError,
+  } = useFetchDoctorById(doctorId || "");
+
   const {
     data: patients,
     status: patientStatus,
@@ -49,6 +51,20 @@ export default function DoctorPage() {
     setViewedPatient(patientId);
     setCurrentPage("patient");
   };
+
+  useEffect(() => {
+    if (fetchedDoctor) {
+      setDoctor(fetchedDoctor); // Update doctor state with fetched data
+    }
+  }, [fetchedDoctor]);
+
+  if (isDoctorLoading) {
+    return <p>Loading doctor details...</p>;
+  }
+
+  if (doctorStatus === "error" || doctorError) {
+    return <p>Error fetching doctor details</p>;
+  }
 
   switch (currentPage) {
     case "patient":
@@ -139,7 +155,7 @@ export default function DoctorPage() {
                   appointments={appointments || []}
                   patients={patients || []}
                   setAppointments={() => {}} // No need to set appointments if fetched from backend
-                  currentDoctorId={initialDoctor.id}
+                  currentDoctorId={doctorId || ""}
                 />
               </div>
               <Timetable

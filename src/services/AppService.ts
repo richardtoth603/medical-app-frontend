@@ -96,7 +96,7 @@ export class AppService {
         }
     }
 
-    public static async getDoctorById(id: string): Promise<Doctor> {
+    public static async getDoctorById(id: string): Promise<Doctor> {        
         const response = await fetch(PatientLocalUrls.getDoctorById + id, {
             method: "GET",
             headers: {
@@ -104,18 +104,31 @@ export class AppService {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         });
+    
         if (response.ok) {
-            const data = await response.json();
-            return {
-                id: data.id,
-                firstName: data.firstName,
-                lastName: data.lastName,
-                specialization: data.specialization
-            } as Doctor;
+            const text = await response.text();
+            console.log('Raw response text:', text);
+    
+            try {
+                const data = JSON.parse(text);
+                console.log('Parsed data:', data);
+    
+                return {
+                    id: data.id,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    specialization: data.specialization,
+                } as Doctor;
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                throw new Error('Failed to parse response as JSON');
+            }
         } else {
+            console.error('Error fetching doctor data:', response.statusText);
             throw new Error("Unable to fetch data");
         }
     }
+    
 
     public static async getDocumentsByPatientId(id: string): Promise<File[]> {
         const response = await fetch(PatientLocalUrls.getDocumentsByPatientId + id, {
