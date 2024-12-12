@@ -8,11 +8,10 @@ import { Label } from '@/components/ui/label'
 import { FileText, Upload } from 'lucide-react'
 import { useAddDocument, useFetchDocumentsByPatientId } from '@/hooks/patientHooks'
 import { useFetchMessages, useSendMessage } from '@/hooks/chatMessageHooks'
+import ReactPDF, { Document, Page, Text, usePDF, View } from '@react-pdf/renderer'
 import dayjs from 'dayjs'
 
-export default function PatientScreen({ patientId, doctorId }: { patientId: string; doctorId: string }) {
-  const [newMessage, setNewMessage] = useState('')
-import ReactPDF, { Document, Page, Text, usePDF, View } from '@react-pdf/renderer'
+
 
 interface DocumentData {
   firstName: string;
@@ -23,8 +22,8 @@ interface DocumentData {
   diagnosis: string;
 }
 
-export default function PatientScreen({ patientId }: { patientId: string }) {
-  const [chatMessage, setChatMessage] = useState('')
+export default function PatientScreen({ patientId, doctorId }: { patientId: string; doctorId: string }) {
+  const [newMessage, setNewMessage] = useState('')
   const [documentData, setDocumentData] = useState<DocumentData>({
     firstName: '',
     lastName: '',
@@ -114,7 +113,7 @@ export default function PatientScreen({ patientId }: { patientId: string }) {
 
     if(instance.blob) {
       const file = new File([instance.blob], 'test.pdf', { type: 'application/pdf' });
-      mutate({ file, patientId });
+      addDocument({ file, patientId });
     }
     //clear the form
     setDocumentData({
