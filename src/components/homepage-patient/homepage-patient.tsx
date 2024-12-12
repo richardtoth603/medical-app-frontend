@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navbar, NavItem } from "../ui/navbar";
 import { PatientDetails } from "./patient-details";
-import { DoctorDetails } from "./doctors-page-patient-pov";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Patient } from "@/domain/models/Patient";
