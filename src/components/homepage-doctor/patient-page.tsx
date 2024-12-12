@@ -3,11 +3,15 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useFetchPatientById } from '@/hooks/doctorHooks'
-import { Input } from '../ui/input'
-import { Label } from '../ui/label'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { FileText, Upload } from 'lucide-react'
 import { useAddDocument, useFetchDocumentsByPatientId } from '@/hooks/patientHooks'
+import { useFetchMessages, useSendMessage } from '@/hooks/chatMessageHooks'
 import ReactPDF, { Document, Page, Text, usePDF, View } from '@react-pdf/renderer'
+import dayjs from 'dayjs'
+
+
 
 interface DocumentData {
   firstName: string;
@@ -18,8 +22,8 @@ interface DocumentData {
   diagnosis: string;
 }
 
-export default function PatientScreen({ patientId }: { patientId: string }) {
-  const [chatMessage, setChatMessage] = useState('')
+export default function PatientScreen({ patientId }: { patientId: string}) {
+  const [newMessage, setNewMessage] = useState('')
   const [documentData, setDocumentData] = useState<DocumentData>({
     firstName: '',
     lastName: '',
@@ -39,23 +43,22 @@ export default function PatientScreen({ patientId }: { patientId: string }) {
     </Document>
   );
   const [instance, updateInstance] = usePDF({ document: MyDocument });
-
   const [pdfs, setPdfs] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
+  const doctorId = localStorage.getItem('role_id') || ''
 
-  const { data, isLoading, status } = useFetchPatientById(patientId)
-
-  const { mutate } = useAddDocument();
-
-  const { data: documents, isLoading: isDocumentsLoading, status: documentsStatus } = useFetchDocumentsByPatientId(patientId);
+  const { data: patient, isLoading: isPatientLoading, status: patientStatus } = useFetchPatientById(patientId)
+  const { mutate: addDocument } = useAddDocument()
+  const { data: documents, isLoading: isDocumentsLoading, status: documentsStatus } = useFetchDocumentsByPatientId(patientId)
+  const { data: messages, isLoading: isMessagesLoading } = useFetchMessages(doctorId, patientId)
+  const sendMessageMutation = useSendMessage()
 
   const handleFileUpload = (files: FileList | null) => {
     if (files) {
-      const newPdfs = Array.from(files)
-        .filter(file => file.type === 'application/pdf')
+      const newPdfs = Array.from(files).filter(file => file.type === 'application/pdf')
       newPdfs.forEach(pdf => {
-        mutate({ file: pdf, patientId });
-      });
+        addDocument({ file: pdf, patientId })
+      })
       setPdfs(prevPdfs => [...prevPdfs, ...newPdfs])
     }
   }
@@ -111,7 +114,7 @@ export default function PatientScreen({ patientId }: { patientId: string }) {
 
     if(instance.blob) {
       const file = new File([instance.blob], 'test.pdf', { type: 'application/pdf' });
-      mutate({ file, patientId });
+      addDocument({ file, patientId });
     }
     //clear the form
     setDocumentData({
@@ -143,22 +146,30 @@ export default function PatientScreen({ patientId }: { patientId: string }) {
 
 
   const handleDownload = (fileName: string) => {
-    const file = documents?.find(pdf => pdf.name === fileName);
+    const file = documents?.find(pdf => pdf.name === fileName)
     if (file) {
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(file);
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(file)
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     }
   }
 
-  const handleChatSubmit = (e: React.FormEvent) => {
+  const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Chat message submitted:', chatMessage)
-    setChatMessage('')
+    if (newMessage.trim()) {
+      sendMessageMutation.mutate({
+        doctorID: doctorId,
+        patientId: patientId,
+        content: newMessage,
+      })
+      setNewMessage('')
+    }
   }
+
+  const sortedMessages = messages?.sort((a, b) => a.sentAt.getTime() - b.sentAt.getTime())
 
   return (
     <div className="container mx-auto p-4">
@@ -166,27 +177,28 @@ export default function PatientScreen({ patientId }: { patientId: string }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Patient Details */}
-
         <Card className="shadow-md overflow-hidden h-full">
-          {isLoading && <p>Loading...</p>}
-          {status === "error" && <p>Error fetching patient</p>}
-          {status === "success" && data && <>
-            <CardHeader>
-              <CardTitle>Patient Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="grid grid-cols-3 gap-4">
-                <div className="col-span-1 font-semibold">First Name:</div>
-                <div className="col-span-2">{data.firstName}</div>
+          {isPatientLoading && <p>Loading...</p>}
+          {patientStatus === "error" && <p>Error fetching patient</p>}
+          {patientStatus === "success" && patient && (
+            <>
+              <CardHeader>
+                <CardTitle>Patient Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <dl className="grid grid-cols-3 gap-4">
+                  <div className="col-span-1 font-semibold">First Name:</div>
+                  <div className="col-span-2">{patient.firstName}</div>
 
-                <div className="col-span-1 font-semibold">Last Name:</div>
-                <div className="col-span-2">{data.lastName}</div>
+                  <div className="col-span-1 font-semibold">Last Name:</div>
+                  <div className="col-span-2">{patient.lastName}</div>
 
-                {/* <div className="col-span-1 font-semibold">Date of Birth:</div>
-              <div className="col-span-2">{formatDate(data.dateOfBirth)}</div> */}
-              </dl>
-            </CardContent>
-          </>}
+                  <div className="col-span-1 font-semibold">Date of Birth:</div>
+                  <div className="col-span-2">{dayjs(patient.dateOfBirth).format('MMM D, YYYY')}</div>
+                </dl>
+              </CardContent>
+            </>
+          )}
         </Card>
 
         {/* Chat Window */}
@@ -195,18 +207,46 @@ export default function PatientScreen({ patientId }: { patientId: string }) {
             <CardTitle>Chat</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleChatSubmit}>
+            {isMessagesLoading ? (
+              <div>Loading messages...</div>
+            ) : (
+              <div className="h-64 overflow-y-auto mb-4 p-4 border rounded-md space-y-4">
+                {sortedMessages?.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.doctorID === doctorId ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[70%] p-3 rounded-lg ${
+                        msg.doctorID === doctorId
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-secondary text-secondary-foreground'
+                      }`}
+                    >
+                      <p className="mb-1">{msg.content}</p>
+                      <p className="text-xs opacity-70">
+                        {dayjs(msg.sentAt).format('MMM D, YYYY HH:mm')}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <form onSubmit={handleSendMessage}>
               <Textarea
                 placeholder="Type your message here..."
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
                 className="mb-2"
               />
-              <Button type="submit">Send Message</Button>
+              <Button type="submit" disabled={sendMessageMutation.isLoading}>
+                {sendMessageMutation.isLoading ? 'Sending...' : 'Send Message'}
+              </Button>
             </form>
           </CardContent>
         </Card>
       </div>
+
       <div className="m-6" />
       {/* Create Document Form */}
       <Card className="shadow-md overflow-hidden h-full">
@@ -256,8 +296,9 @@ export default function PatientScreen({ patientId }: { patientId: string }) {
         <CardContent className="shadow-md overflow-hidden h-full">
           <div className="space-y-4">
             <div
-              className={`border-2 border-dashed rounded-lg p-8 text-center ${isDragging ? 'border-primary bg-primary/10' : 'border-muted-foreground'
-                }`}
+              className={`border-2 border-dashed rounded-lg p-8 text-center ${
+                isDragging ? 'border-primary bg-primary/10' : 'border-muted-foreground'
+              }`}
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
@@ -299,3 +340,4 @@ export default function PatientScreen({ patientId }: { patientId: string }) {
     </div>
   )
 }
+
