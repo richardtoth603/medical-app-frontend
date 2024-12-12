@@ -3,17 +3,21 @@ import DoctorProfile from "./doctor-profile";
 import AppointmentList from "./doctor-appointmentList";
 import { Navbar } from "@/components/ui/navbar";
 import { NavItem } from "@/components/ui/navbar";
+import { Patient } from "@/domain/models/Patient";
 import { Doctor } from "@/domain/models/Doctor";
+import { Appointment } from "@/domain/models/Appointment";
 import Timetable from "../ui/doctor-timetable";
-import { useFetchPatients, useFetchAppointments } from "@/hooks/doctorHooks";
+import { useFetchPatients } from "@/hooks/doctorHooks";
 import { useFetchDoctorById } from "@/hooks/patientHooks";
+import { useFetchAppointmentsByDoctorId } from "@/hooks/doctorHooks"; // Import the correct hook
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import PatientScreen from "./patient-page";
 
 export default function DoctorPage() {
-  const doctorId = localStorage.getItem("role_id");
+  const doctorId = localStorage.getItem("role_id"); // Ensure you have the correct doctor ID
   const [doctor, setDoctor] = useState<Doctor>({} as Doctor);
+
   const {
     data: fetchedDoctor,
     status: doctorStatus,
@@ -26,11 +30,13 @@ export default function DoctorPage() {
     status: patientStatus,
     isLoading: isPatientsLoading,
   } = useFetchPatients();
+
+  // Fetch appointments by doctor ID
   const {
     data: appointments,
     status: appointmentStatus,
     isLoading: isAppointmentsLoading,
-  } = useFetchAppointments();
+  } = useFetchAppointmentsByDoctorId(doctorId || ""); // Use the hook with doctorId
 
   const [isViewingDoctorDetails, setIsViewingDoctorDetails] = useState(false);
   const [viewedPatient, setViewedPatient] = useState("");
@@ -152,7 +158,7 @@ export default function DoctorPage() {
                   </CardContent>
                 </Card>
                 <AppointmentList
-                  appointments={appointments || []}
+                  appointments={appointments || []} // Appointments filtered by doctorId
                   patients={patients || []}
                   setAppointments={() => {}} // No need to set appointments if fetched from backend
                   currentDoctorId={doctorId || ""}

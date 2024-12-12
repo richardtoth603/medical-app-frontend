@@ -96,7 +96,7 @@ export class AppService {
         }
     }
 
-    public static async getDoctorById(id: string): Promise<Doctor> {        
+    public static async getDoctorById(id: string): Promise<Doctor> {     
         const response = await fetch(PatientLocalUrls.getDoctorById + id, {
             method: "GET",
             headers: {
