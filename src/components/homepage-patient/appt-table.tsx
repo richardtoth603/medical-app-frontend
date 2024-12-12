@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Appointment } from "@/domain/models/Appointment";
 import { Button } from "@/components/ui/button";
-import { useFetchAppointmentsByDoctorId } from "@/hooks/doctorHooks"; // Import the hook
+import { useAddAppointment } from "@/hooks/patientHooks"; // Import the hook
 
 // Function to get the date for a specific day of the current week
 const getDateForDayOfWeek = (dayOfWeek: number, currentDate: Date) => {
@@ -21,13 +21,11 @@ const getMondayOfCurrentWeek = (date: Date) => {
 
 interface AppointmentTimetableProps {
   doctorId: string;
-  onBookAppointment: (date: string, time: string) => void;
   newlyBookedAppointment: { date: string; time: string } | null;
 }
 
 const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   doctorId,
-  onBookAppointment,
   newlyBookedAppointment,
 }) => {
   const [currentWeekStartDate, setCurrentWeekStartDate] = useState(
@@ -39,13 +37,20 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
     time: string;
   } | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const { data: doctorAppointments } = useFetchAppointmentsByDoctorId(doctorId); // Fetch appointments by doctorId
+  const { mutate: addAppointment } = useAddAppointment(); // Get mutate function from hook
 
   useEffect(() => {
-    if (doctorAppointments) {
+    const fetchAppointments = async () => {
+      const response = await fetch("/Appointments/GetAllAppointments");
+      const allAppointments: Appointment[] = await response.json();
+      const doctorAppointments = allAppointments.filter(
+        (app) => app.doctorId === doctorId
+      );
       setAppointments(doctorAppointments);
-    }
-  }, [doctorAppointments]);
+    };
+
+    fetchAppointments();
+  }, [doctorId]);
 
   useEffect(() => {
     if (newlyBookedAppointment) {
@@ -70,9 +75,15 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   });
 
   const isSlotAvailable = (date: string, time: string) => {
-    return !appointments.some(
-      (app) =>
-        app.date.toISOString().split("T")[0] === date && app.time === time
+    return (
+      !appointments.some(
+        (app) =>
+          app.date.toISOString().split("T")[0] === date && app.time === time
+      ) &&
+      !(
+        newlyBookedAppointment?.date === date &&
+        newlyBookedAppointment?.time === time
+      )
     );
   };
 
@@ -98,7 +109,13 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   const handleConfirmAppointment = () => {
     if (selectedSlot) {
       // Use the hook to add the appointment
-      onBookAppointment(selectedSlot.date, selectedSlot.time);
+      addAppointment({
+        id: "",
+        patientId: "7769c180-3377-477b-8661-c8e8748eeecf", // The patient ID
+        doctorId: doctorId,
+        date: new Date(selectedSlot.date),
+        time: selectedSlot.time,
+      });
       setSelectedSlot(null);
       setShowModal(false);
     }
@@ -150,7 +167,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
                       className={`border p-2 ${
                         available
                           ? "bg-green-100 cursor-pointer hover:bg-green-200"
-                          : "bg-red-100 cursor-not-allowed"
+                          : "bg-red-100"
                       }`}
                       onClick={() => available && handleSlotClick(date, time)}
                     >
