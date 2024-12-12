@@ -1,3 +1,4 @@
+import { Appointment } from "@/domain/models/Appointment";
 import { Doctor } from "@/domain/models/Doctor";
 import { Patient } from "@/domain/models/Patient";
 
@@ -8,6 +9,14 @@ export class PatientLocalUrls {
     static readonly getDoctorById = "https://localhost:7062/Doctors/GetDoctorById/";
     static readonly getDocumentsByPatientId = "https://localhost:7062/Document/GetDocumentByPatientId/";
     static readonly addDocument = "https://localhost:7062/Document/AddDocument";
+    static readonly allAppointmentsList = "https://localhost:7062/Appointments/GetAllAppointments";
+    static readonly getAppointmentById = "https://localhost:7062/Appointments/GetAppointmentById/";
+    static readonly getAppointmentByPatientId = "https://localhost:7062/Appointments/GetAppointmentByPacientId/";
+    static readonly getAppointmentByDoctorId = "https://localhost:7062/Appointments/GetAppointmentByDoctorId/";
+    static readonly getSortedAndPaginatedAppointment = "https://localhost:7062/Appointments/GetSortedAndPaginatedAppointments";
+    static readonly updateAppointment = "https://localhost:7062/Appointments/UpdateAppointment";
+    static readonly deleteAppointment = "https://localhost:7062/Appointments/DeleteAppointment/";
+    static readonly addAppointment = "https://localhost:7062/Appointments/CreateAppointment";
 }
 
 export class AppService {
@@ -169,4 +178,133 @@ export class AppService {
             throw new Error("Unable to upload document");
         }
     }
+
+    public static async getAllAppointments(): Promise<Appointment[]> {
+        const response = await fetch(PatientLocalUrls.allAppointmentsList, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+        });
+        if (response.ok) {
+            const data = await response.json();
+            // map the data to the Appointment type, from the list called 'records' returned in the response
+            return data.records.map((appointment: any) => {
+                const [date, time] = appointment.date.split("T"); // Split date and time
+                return {
+                    id: appointment.id,
+                    doctorId: appointment.doctorId,
+                    patientId: appointment.pacientId,
+                    date: new Date(date), // Only the date part
+                    time: time.replace("Z", ""), // Time without 'Z' (optional cleanup)
+                };
+            }) as Appointment[];
+            return data;
+        } else {
+            throw new Error("Unable to fetch data");
+        }
+    }
+
+    public static async getAppointmentsByPatientId(patientId: string): Promise<Appointment[]> {
+        const response = await fetch(PatientLocalUrls.getAppointmentByPatientId + patientId, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+        });
+        if (response.ok) {
+            const data = await response.json();
+            return data.records.map((appointment: any) => ({
+                id: appointment.id,
+                date: new Date(appointment.date.split("T")[0]), // Extract date
+                time: appointment.date.split("T")[1]?.replace("Z", ""), // Extract time
+                patientId: appointment.pacientId,
+                doctorId: appointment.doctorId,
+            })) as Appointment[];
+        } else {
+            throw new Error("Unable to fetch appointments by patient ID");
+        }
+    }
+
+    public static async getAppointmentsByDoctorId(doctorId: string): Promise<Appointment[]> {
+        const response = await fetch(PatientLocalUrls.getAppointmentByDoctorId + doctorId, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+        });
+        if (response.ok) {
+            const data = await response.json();
+            return data.records.map((appointment: any) => ({
+                id: appointment.id,
+                date: new Date(appointment.date.split("T")[0]),
+                time: appointment.date.split("T")[1]?.replace("Z", ""),
+                patientId: appointment.pacientId,
+                doctorId: appointment.doctorId,
+            })) as Appointment[];
+        } else {
+            throw new Error("Unable to fetch appointments by doctor ID");
+        }
+    }
+
+    public static async addAppointment(appointment: Appointment): Promise<void> {
+        const body = JSON.stringify({
+            pacientId: appointment.patientId,
+            doctorId: appointment.doctorId,
+            date: `${appointment.date.toISOString().split("T")[0]}T${appointment.time}Z`, // Combine date and time
+        });
+
+        const response = await fetch(PatientLocalUrls.addAppointment, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+            body,
+        });
+
+        if (!response.ok) {
+            throw new Error("Unable to add appointment");
+        }
+    }
+
+    public static async updateAppointment(appointment: Appointment): Promise<void> {
+        const body = JSON.stringify({
+            id: appointment.id,
+            pacientId: appointment.patientId,
+            doctorId: appointment.doctorId,
+            date: `${appointment.date.toISOString().split("T")[0]}T${appointment.time}Z`,
+        });
+
+        const response = await fetch(PatientLocalUrls.updateAppointment, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+            body,
+        });
+
+        if (!response.ok) {
+            throw new Error("Unable to update appointment");
+        }
+    }
+
+    public static async deleteAppointment(appointmentId: string): Promise<void> {
+        const response = await fetch(PatientLocalUrls.deleteAppointment + appointmentId, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Unable to delete appointment");
+        }
+    }
+    
 }
