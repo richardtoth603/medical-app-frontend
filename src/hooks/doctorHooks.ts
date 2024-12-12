@@ -22,27 +22,10 @@ export const useFetchAppointments = () => {
     });
 }
 
-export const useFetchAppointmentsByPatientId = (patientId: string) => {
-    return useQuery({
-        queryKey: ['appointments', 'patient', patientId],
-        queryFn: () => AppService.getAppointmentsByPatientId(patientId),
-    });
-}
-
 export const useFetchAppointmentsByDoctorId = (doctorId: string) => {
     return useQuery({
         queryKey: ['appointments', 'doctor', doctorId],
         queryFn: () => AppService.getAppointmentsByDoctorId(doctorId),
-    });
-}
-
-export const useAddAppointment = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: AppService.addAppointment,
-        onSuccess: () => {
-            queryClient.invalidateQueries(['appointments']); // Refetch appointments after adding
-        },
     });
 }
 

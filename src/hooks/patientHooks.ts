@@ -40,3 +40,20 @@ export const useAddDocument = () => {
         }
     });
 }
+
+export const useFetchAppointmentsByPatientId = (patientId: string) => {
+    return useQuery({
+        queryKey: ['appointments', 'patient', patientId],
+        queryFn: () => AppService.getAppointmentsByPatientId(patientId),
+    });
+}
+
+export const useAddAppointment = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: AppService.addAppointment,
+        onSuccess: () => {
+            queryClient.invalidateQueries(['appointments']); // Refetch appointments after adding
+        },
+    });
+}
