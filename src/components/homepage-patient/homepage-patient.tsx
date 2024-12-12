@@ -11,6 +11,8 @@ import { useApplicationContext } from "@/context/ApplicationContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFetchDoctors } from "@/hooks/patientHooks";
 import DoctorDetails from "./doctors-page-patient-pov";
+import {MentalHealthDashboard} from "@/components/mental-health/MentalHealthDashboard.tsx";
+
 
 const dummyAppointments: Appointment[] = [
   {
@@ -77,6 +79,8 @@ const dummyMedicines: Medicine[] = [
 const navItems: NavItem[] = [
   { label: "Home", href: "home" },
   { label: "Patient Details", href: "patient" },
+  { label: "Mental Health", href: "mental-health" },
+
 ];
 
 export default function PatientPortal() {
@@ -136,6 +140,8 @@ export default function PatientPortal() {
             }
           />
         );
+      case "mental-health":
+        return <MentalHealthDashboard />;
       default:
         return (
           <div className="space-y-6">
