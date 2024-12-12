@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Appointment } from "@/domain/models/Appointment";
 import { Button } from "@/components/ui/button";
+import { useAddAppointment } from "@/hooks/patientHooks"; // Import the hook
 
 // Helper function to normalize the date (set time to 00:00:00) for comparison
 const normalizeDate = (date: Date) => {
@@ -27,13 +28,11 @@ const getMondayOfCurrentWeek = (date: Date) => {
 
 interface AppointmentTimetableProps {
   doctorId: string;
-  onBookAppointment: (date: string, time: string) => void;
   newlyBookedAppointment: { date: string; time: string } | null;
 }
 
 const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   doctorId,
-  onBookAppointment,
   newlyBookedAppointment,
 }) => {
   const [currentWeekStartDate, setCurrentWeekStartDate] = useState(
@@ -45,6 +44,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
     time: string;
   } | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const { mutate: addAppointment } = useAddAppointment(); // Get mutate function from hook
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -67,7 +67,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
           id: Date.now().toString(),
           date: new Date(newlyBookedAppointment.date),
           time: newlyBookedAppointment.time,
-          patientId: "current-user",
+          patientId: "7769c180-3377-477b-8661-c8e8748eeecf", // Use the provided patientId
           doctorId: doctorId,
         },
       ]);
@@ -115,7 +115,14 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
 
   const handleConfirmAppointment = () => {
     if (selectedSlot) {
-      onBookAppointment(selectedSlot.date, selectedSlot.time);
+      // Use the hook to add the appointment
+      addAppointment({
+        id: "",
+        patientId: "7769c180-3377-477b-8661-c8e8748eeecf", // The patient ID
+        doctorId: doctorId,
+        date: new Date(selectedSlot.date),
+        time: selectedSlot.time,
+      });
       setSelectedSlot(null);
       setShowModal(false);
     }
