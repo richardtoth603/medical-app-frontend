@@ -22,7 +22,7 @@ interface DocumentData {
   diagnosis: string;
 }
 
-export default function PatientScreen({ patientId, doctorId }: { patientId: string; doctorId: string }) {
+export default function PatientScreen({ patientId }: { patientId: string}) {
   const [newMessage, setNewMessage] = useState('')
   const [documentData, setDocumentData] = useState<DocumentData>({
     firstName: '',
@@ -45,6 +45,7 @@ export default function PatientScreen({ patientId, doctorId }: { patientId: stri
   const [instance, updateInstance] = usePDF({ document: MyDocument });
   const [pdfs, setPdfs] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
+  const doctorId = localStorage.getItem('role_id') || ''
 
   const { data: patient, isLoading: isPatientLoading, status: patientStatus } = useFetchPatientById(patientId)
   const { mutate: addDocument } = useAddDocument()
