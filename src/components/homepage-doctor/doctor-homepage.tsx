@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 import PatientScreen from "./patient-page";
 
 const initialDoctor: Doctor = {
-  id: "d1",
+  id: "830085f0-a1af-434a-ace7-0d378fda0937",
   firstName: "Dr. John",
   lastName: "Doe",
   specialization: "Cardiology",
@@ -141,6 +141,7 @@ export default function DoctorPage() {
                   appointments={appointments || []}
                   patients={patients || []}
                   setAppointments={() => {}} // No need to set appointments if fetched from backend
+                  currentDoctorId={initialDoctor.id}
                 />
               </div>
               <Timetable
