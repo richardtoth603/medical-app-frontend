@@ -9,8 +9,8 @@ export class PatientLocalUrls {
     static readonly getDoctorById = "https://localhost:7062/Doctors/GetDoctorById/";
     static readonly getDocumentsByPatientId = "https://localhost:7062/Document/GetDocumentByPatientId/";
     static readonly addDocument = "https://localhost:7062/Document/AddDocument";
-    static readonly getMessagesById = "https://localhost:7062/Messages/GetMessagesByIDs";
-    static readonly sendMessage = "https://localhost:7062/Messages/SendMessage";
+    static readonly getMessagesById = "https://localhost:7062/ChatMessage/GetSortedAndPaginatedChatMessagesByDoctorIdAndPatientId";
+    static readonly sendMessage = "https://localhost:7062/ChatMessage/CreateChatMessage";
 }
 
 export class AppService {
