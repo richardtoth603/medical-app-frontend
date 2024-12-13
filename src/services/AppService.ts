@@ -10,8 +10,6 @@ export class PatientLocalUrls {
     static readonly getDoctorById = "https://localhost:7062/Doctors/GetDoctorById/";
     static readonly getDocumentsByPatientId = "https://localhost:7062/Document/GetDocumentByPatientId/";
     static readonly addDocument = "https://localhost:7062/Document/AddDocument";
-    static readonly getMessagesById = "https://localhost:7062/Messages/GetMessagesByIDs";
-    static readonly sendMessage = "https://localhost:7062/Messages/SendMessage";
     static readonly allAppointmentsList = "https://localhost:7062/Appointments/GetAllAppointments";
     static readonly getAppointmentById = "https://localhost:7062/Appointments/GetAppointmentById/";
     static readonly getAppointmentByPatientId = "https://localhost:7062/Appointments/GetAppointmentByPacientId/";
@@ -20,6 +18,8 @@ export class PatientLocalUrls {
     static readonly updateAppointment = "https://localhost:7062/Appointments/UpdateAppointment";
     static readonly deleteAppointment = "https://localhost:7062/Appointments/DeleteAppointment/";
     static readonly addAppointment = "https://localhost:7062/Appointments/CreateAppointment";
+    static readonly getMessagesById = "https://localhost:7062/ChatMessage/GetSortedAndPaginatedChatMessagesByDoctorIdAndPatientId";
+    static readonly sendMessage = "https://localhost:7062/ChatMessage/CreateChatMessage";
 }
 
 export class AppService {
