@@ -1,40 +1,15 @@
 import { useEffect, useState } from "react";
 import { Navbar, NavItem } from "../ui/navbar";
 import { PatientDetails } from "./patient-details";
+import DoctorDetails from "./doctors-page-patient-pov";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Patient } from "@/domain/models/Patient";
-import { Doctor } from "@/domain/models/Doctor";
-import { Appointment } from "@/domain/models/Appointment";
 import { Medicine } from "@/domain/models/Medicine";
-import { useApplicationContext } from "@/context/ApplicationContext";
 import { useNavigate, useParams } from "react-router-dom";
-import { useFetchDoctors } from "@/hooks/patientHooks";
-import DoctorDetails from "./doctors-page-patient-pov";
-
-const dummyAppointments: Appointment[] = [
-  {
-    id: "A001",
-    date: new Date("2024-12-12"),
-    time: "10:00 AM",
-    patientId: "P001",
-    doctorId: "a7ca8a79-4dd4-42bd-bd6e-77f6c1c0423b",
-  },
-  {
-    id: "A002",
-    date: new Date("2024-12-13"),
-    time: "2:00 PM",
-    patientId: "P001",
-    doctorId: "830085f0-a1af-434a-ace7-0d378fda0937",
-  },
-  {
-    id: "A003",
-    date: new Date("2024-12-14"),
-    time: "11:30 AM",
-    patientId: "P001",
-    doctorId: "D003",
-  },
-];
+import {
+  useFetchDoctors,
+  useFetchAppointmentsByPatientId,
+} from "@/hooks/patientHooks";
 
 const dummyMedicines: Medicine[] = [
   {
@@ -83,20 +58,24 @@ export default function PatientPortal() {
   const { data, status, isLoading } = useFetchDoctors();
   const [currentPage, setCurrentPage] = useState("home");
   const [medicines] = useState<Medicine[]>(dummyMedicines);
-  const [appointments] = useState<Appointment[]>(dummyAppointments);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const params = useParams();
   const navigate = useNavigate();
 
+  // Fetch appointments using the patient's ID
+  const patientId = localStorage.getItem("role_id") || "";
+  const {
+    data: appointments,
+    status: appointmentsStatus,
+    isLoading: appointmentsLoading,
+  } = useFetchAppointmentsByPatientId(patientId);
+
   // check if the user is authorized to view this page
   useEffect(() => {
-    if (
-      localStorage.getItem("token") === null ||
-      localStorage.getItem("token") === undefined
-    ) {
+    if (!localStorage.getItem("token")) {
       navigate("/signup");
     }
-    // TODO: technically we should check for the user ID here, instead of the roleId
+
     const roleIdFromPath = params.roleId;
     const roleIdFromStorage = localStorage.getItem("role_id");
 
@@ -127,15 +106,7 @@ export default function PatientPortal() {
 
     switch (currentPage) {
       case "patient":
-        return (
-          <PatientDetails
-            patientId={
-              localStorage.getItem("role_id")?.toString()
-                ? localStorage.getItem("role_id")?.toString()!
-                : ""
-            }
-          />
-        );
+        return <PatientDetails patientId={patientId} />;
       default:
         return (
           <div className="space-y-6">
@@ -236,29 +207,47 @@ export default function PatientPortal() {
                   <tr className="bg-gray-100">
                     <th className="px-4 py-2 border">Date</th>
                     <th className="px-4 py-2 border">Time</th>
-                    <th className="px-4 py-2 border">Doctor ID</th>
+                    <th className="px-4 py-2 border">Doctor</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {appointments.map((appointment) => {
-                    // Find the doctor by matching doctorId, checking if 'data' exists
-                    const doctor = data
-                      ? data.find((doc) => doc.id === appointment.doctorId)
-                      : null;
-                    return (
-                      <tr key={appointment.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-2 border">
-                          {appointment.date.toLocaleDateString()}
-                        </td>
-                        <td className="px-4 py-2 border">{appointment.time}</td>
-                        <td className="px-4 py-2 border">
-                          {doctor
-                            ? `${doctor.firstName} ${doctor.lastName}`
-                            : "Unknown"}
-                        </td>
+                  {appointmentsLoading && (
+                    <tr>
+                      <td colSpan={3}>Loading appointments...</td>
+                    </tr>
+                  )}
+                  {appointmentsStatus === "error" && (
+                    <tr>
+                      <td colSpan={3}>Error fetching appointments</td>
+                    </tr>
+                  )}
+                  {appointmentsStatus === "success" &&
+                    appointments?.length === 0 && (
+                      <tr>
+                        <td colSpan={3}>No appointments found</td>
                       </tr>
-                    );
-                  })}
+                    )}
+                  {appointmentsStatus === "success" &&
+                    appointments?.map((appointment) => {
+                      const doctor = data?.find(
+                        (doc) => doc.id === appointment.doctorId
+                      );
+                      return (
+                        <tr key={appointment.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 border">
+                            {appointment.date.toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-2 border">
+                            {appointment.time}
+                          </td>
+                          <td className="px-4 py-2 border">
+                            {doctor
+                              ? `${doctor.firstName} ${doctor.lastName}`
+                              : "Unknown"}
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
