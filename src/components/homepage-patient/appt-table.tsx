@@ -66,7 +66,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   ) => {
     const startOfWeek = getMondayOfCurrentWeek(currentWeekStartDate);
     const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 4);
+    endOfWeek.setDate(startOfWeek.getDate() + 5);
 
     return unavailableappointments.filter((unavailableappointment) => {
       const appointmentDate = normalizeDate(
