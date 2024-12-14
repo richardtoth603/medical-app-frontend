@@ -4,17 +4,23 @@ import { Patient } from "@/domain/models/Patient";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  useUpdateAppointment,
+  useDeleteAppointment,
+} from "@/hooks/doctorHooks";
 
 interface AppointmentListProps {
   appointments: Appointment[];
   patients: Patient[];
   setAppointments: React.Dispatch<React.SetStateAction<Appointment[]>>;
+  currentDoctorId: string;
 }
 
 const AppointmentList: React.FC<AppointmentListProps> = ({
   appointments,
   patients,
   setAppointments,
+  currentDoctorId,
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingDate, setEditingDate] = useState<string>("");
@@ -29,6 +35,9 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
     null
   );
 
+  const { mutate: updateAppointmentMutate } = useUpdateAppointment();
+  const { mutate: deleteAppointmentMutate } = useDeleteAppointment();
+
   const handleEditAppointment = (appointment: Appointment) => {
     setEditingId(appointment.id);
     setEditingDate(appointment.date.toISOString().split("T")[0]); // Extract date part
@@ -41,20 +50,40 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
   };
 
   const updateAppointment = () => {
-    if (!selectedPatientId || !editingDate || !editingHour || !editingMinute)
+    if (
+      !editingId ||
+      !selectedPatientId ||
+      !editingDate ||
+      !editingHour ||
+      !editingMinute
+    )
       return;
-    setAppointments(
-      appointments.map((appt) =>
-        appt.id === editingId
-          ? {
-              ...appt,
-              date: new Date(editingDate),
-              time: `${editingHour}:${editingMinute}`, // Concatenate hour and minute
-              patientId: selectedPatientId,
-            }
-          : appt
-      )
-    );
+
+    const updatedAppointment: Appointment = {
+      id: editingId,
+      date: new Date(editingDate),
+      time: `${editingHour}:${editingMinute}`, // Concatenate hour and minute
+      patientId: selectedPatientId, // Doctor id is missing from here
+      doctorId: currentDoctorId,
+    };
+
+    updateAppointmentMutate(updatedAppointment, {
+      onSuccess: () => {
+        // Update local state optimistically
+        setAppointments(
+          appointments.map((appt) =>
+            appt.id === editingId ? updatedAppointment : appt
+          )
+        );
+        resetEditingState();
+      },
+      onError: (error) => {
+        console.error("Failed to update appointment:", error);
+      },
+    });
+  };
+
+  const resetEditingState = () => {
     setEditingId(null);
     setEditingDate("");
     setEditingHour("8"); // Reset to default
@@ -63,13 +92,20 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
   };
 
   const confirmDeleteAppointment = () => {
-    if (appointmentToDelete) {
-      setAppointments(
-        appointments.filter((appt) => appt.id !== appointmentToDelete)
-      );
-      setDeleteConfirmationVisible(false);
-      setAppointmentToDelete(null);
-    }
+    if (!appointmentToDelete) return;
+
+    deleteAppointmentMutate(appointmentToDelete, {
+      onSuccess: () => {
+        // Remove the deleted appointment from local state
+        setAppointments(
+          appointments.filter((appt) => appt.id !== appointmentToDelete)
+        );
+        cancelDeleteAppointment();
+      },
+      onError: (error) => {
+        console.error("Failed to delete appointment:", error);
+      },
+    });
   };
 
   const cancelDeleteAppointment = () => {
@@ -99,7 +135,6 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                   value={editingDate}
                   onChange={(e) => setEditingDate(e.target.value)}
                 />
-                {/* Hour Dropdown */}
                 <select
                   value={editingHour}
                   onChange={(e) => setEditingHour(e.target.value)}
@@ -113,7 +148,6 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                     );
                   })}
                 </select>
-                {/* Minute Dropdown */}
                 <select
                   value={editingMinute}
                   onChange={(e) => setEditingMinute(e.target.value)}

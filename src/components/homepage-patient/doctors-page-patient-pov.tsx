@@ -8,20 +8,9 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { useFetchDoctorById } from "@/hooks/patientHooks";
 import { useFetchMessages, useSendMessage } from "@/hooks/chatMessageHooks";
-import dayjs from 'dayjs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Doctor } from "@/domain/models/Doctor";
+import dayjs from "dayjs";
 import AppointmentTimetable from "@/components/homepage-patient/appt-table";
 
 interface DoctorDetailsProps {
@@ -29,14 +18,21 @@ interface DoctorDetailsProps {
   onBack: () => void;
 }
 
-export default function DoctorDetails({ doctorId, onBack }: DoctorDetailsProps) {
+export default function DoctorDetails({
+  doctorId,
+  onBack,
+}: DoctorDetailsProps) {
   const patientId = localStorage.getItem("role_id") || "";
   const [newMessage, setNewMessage] = useState("");
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [selectedTime, setSelectedTime] = useState<string>("");
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const { data: doctor, isLoading: isLoadingDoctor, status: doctorStatus } = useFetchDoctorById(doctorId);
-  const { data: messages, isLoading: isLoadingMessages } = useFetchMessages(doctorId, patientId);
+  const {
+    data: doctor,
+    isLoading: isLoadingDoctor,
+    status: doctorStatus,
+  } = useFetchDoctorById(doctorId);
+  const { data: messages, isLoading: isLoadingMessages } = useFetchMessages(
+    doctorId,
+    patientId
+  );
   const sendMessageMutation = useSendMessage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { data, isLoading, status } = useFetchDoctorById(doctorId);
@@ -56,7 +52,7 @@ export default function DoctorDetails({ doctorId, onBack }: DoctorDetailsProps) 
         content: newMessage,
       });
       setNewMessage("");
-    };
+    }
   };
 
   const handleBookAppointment = (date: string, time: string) => {
@@ -67,7 +63,9 @@ export default function DoctorDetails({ doctorId, onBack }: DoctorDetailsProps) 
     setNewlyBookedAppointment({ date, time });
   };
 
-  const sortedMessages = messages?.sort((a, b) => a.sentAt.getTime() - b.sentAt.getTime());
+  const sortedMessages = messages?.sort(
+    (a, b) => a.sentAt.getTime() - b.sentAt.getTime()
+  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -138,17 +136,22 @@ export default function DoctorDetails({ doctorId, onBack }: DoctorDetailsProps) 
                     {sortedMessages?.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`flex ${msg.doctorID === doctorId ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${
+                          msg.doctorID === doctorId
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
                       >
                         <div
-                          className={`max-w-[70%] p-3 rounded-lg ${msg.doctorID === doctorId
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-secondary text-secondary-foreground'
-                            }`}
+                          className={`max-w-[70%] p-3 rounded-lg ${
+                            msg.doctorID === doctorId
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-secondary text-secondary-foreground"
+                          }`}
                         >
                           <p className="mb-1">{msg.content}</p>
                           <p className="text-xs opacity-70">
-                            {dayjs(msg.sentAt).format('MMM D, YYYY HH:mm')}
+                            {dayjs(msg.sentAt).format("MMM D, YYYY HH:mm")}
                           </p>
                         </div>
                       </div>
@@ -163,12 +166,17 @@ export default function DoctorDetails({ doctorId, onBack }: DoctorDetailsProps) 
                     placeholder="Type your message here..."
                     className="flex-grow"
                   />
-                  <Button onClick={handleSendMessage} disabled={sendMessageMutation.isLoading}>
-                    {sendMessageMutation.isLoading ? 'Sending...' : 'Send'}
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={sendMessageMutation.isLoading}
+                  >
+                    {sendMessageMutation.isLoading ? "Sending..." : "Send"}
                   </Button>
                 </div>
                 {sendMessageMutation.isError && (
-                  <p className="text-destructive mt-2">Error sending message. Please try again.</p>
+                  <p className="text-destructive mt-2">
+                    Error sending message. Please try again.
+                  </p>
                 )}
               </CardContent>
             </>
