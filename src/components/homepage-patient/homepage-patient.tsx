@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Medicine } from "@/domain/models/Medicine";
 import { useNavigate, useParams } from "react-router-dom";
+import {MentalHealthDashboard} from "@/components/mental-health/MentalHealthDashboard.tsx";
 import {
   useFetchDoctors,
   useFetchAppointmentsByPatientId,
@@ -52,6 +53,8 @@ const dummyMedicines: Medicine[] = [
 const navItems: NavItem[] = [
   { label: "Home", href: "home" },
   { label: "Patient Details", href: "patient" },
+  { label: "Mental Health", href: "mental-health" },
+
 ];
 
 export default function PatientPortal() {
@@ -106,7 +109,11 @@ export default function PatientPortal() {
 
     switch (currentPage) {
       case "patient":
-        return <PatientDetails patientId={patientId} />;
+        return (
+          <PatientDetails patientId={patientId} />
+        );
+      case "mental-health":
+        return <MentalHealthDashboard />;
       default:
         return (
           <div className="space-y-6">
