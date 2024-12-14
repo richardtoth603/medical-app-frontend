@@ -40,6 +40,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   doctorId,
   newlyBookedAppointment,
 }) => {
+  const patientId = localStorage.getItem("role_id") || "";
   const [currentWeekStartDate, setCurrentWeekStartDate] = useState(
     getMondayOfCurrentWeek(new Date())
   );
@@ -120,7 +121,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
           id: Date.now().toString(),
           date: new Date(newlyBookedAppointment.date),
           time: newlyBookedAppointment.time,
-          patientId: "7769c180-3377-477b-8661-c8e8748eeecf", // Use the provided patientId
+          patientId: patientId, // Use the provided patientId
           doctorId: doctorId,
         },
       ]);
@@ -164,7 +165,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
       // Use the hook to add the appointment
       addAppointment({
         id: "",
-        patientId: "7769c180-3377-477b-8661-c8e8748eeecf", // The patient ID
+        patientId: patientId, // The patient ID
         doctorId: doctorId,
         date: new Date(selectedSlot.date),
         time: selectedSlot.time,
