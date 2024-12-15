@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Appointment } from "@/domain/models/Appointment";
 import { Button } from "@/components/ui/button";
 import { useAddAppointment } from "@/hooks/patientHooks"; // Import the hook
+import { useFetchAppointmentsByDoctorId } from "@/hooks/doctorHooks";
 
 // Function to get the date for a specific day of the current week
 const getDateForDayOfWeek = (dayOfWeek: number, currentDate: Date) => {
@@ -19,6 +20,17 @@ const getMondayOfCurrentWeek = (date: Date) => {
   return monday;
 };
 
+const normalizeDate = (date: Date) => {
+  return new Date(date.toISOString().split("T")[0]); // Normalize to YYYY-MM-DD
+};
+
+const convertTo24HourFormat = (time: string) => {
+  const [hour, minute] = time.split(":").map(Number);
+  return `${hour.toString().padStart(2, "0")}:${minute
+    .toString()
+    .padStart(2, "0")}`;
+};
+
 interface AppointmentTimetableProps {
   doctorId: string;
   newlyBookedAppointment: { date: string; time: string } | null;
@@ -28,6 +40,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   doctorId,
   newlyBookedAppointment,
 }) => {
+  const patientId = localStorage.getItem("role_id") || "";
   const [currentWeekStartDate, setCurrentWeekStartDate] = useState(
     getMondayOfCurrentWeek(new Date())
   );
@@ -38,6 +51,54 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
   } | null>(null);
   const [showModal, setShowModal] = useState(false);
   const { mutate: addAppointment } = useAddAppointment(); // Get mutate function from hook
+  const { data: unavailableappointments = [] } =
+    useFetchAppointmentsByDoctorId(doctorId); // Use the hook
+
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  const timeSlots = Array.from({ length: 20 }, (_, i) => {
+    const hour = Math.floor(i / 2) + 8;
+    const minute = (i % 2) * 30;
+    return `${hour.toString().padStart(2, "0")}:${minute === 0 ? "00" : "30"}`;
+  });
+
+  const getAppointmentsForCurrentWeek = (
+    unavailableappointments: Appointment[]
+  ) => {
+    const startOfWeek = getMondayOfCurrentWeek(currentWeekStartDate);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 5);
+
+    return unavailableappointments.filter((unavailableappointment) => {
+      const appointmentDate = normalizeDate(
+        new Date(unavailableappointment.date)
+      );
+      return appointmentDate >= startOfWeek && appointmentDate <= endOfWeek;
+    });
+  };
+
+  const currentWeekAppointments = getAppointmentsForCurrentWeek(
+    unavailableappointments
+  );
+
+  const timetable = daysOfWeek.map(() => Array(timeSlots.length).fill(null));
+
+  currentWeekAppointments.forEach((unavailableappointment) => {
+    const appointmentTime = convertTo24HourFormat(unavailableappointment.time);
+    const appointmentDate = new Date(unavailableappointment.date);
+    const appointmentDay = appointmentDate.getDay();
+    const appointmentSlotIndex = timeSlots.findIndex(
+      (slot) => convertTo24HourFormat(slot) === appointmentTime
+    );
+
+    if (
+      appointmentSlotIndex !== -1 &&
+      appointmentDay >= 1 &&
+      appointmentDay <= 5
+    ) {
+      timetable[appointmentDay - 1][appointmentSlotIndex] =
+        unavailableappointment;
+    }
+  });
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -60,19 +121,12 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
           id: Date.now().toString(),
           date: new Date(newlyBookedAppointment.date),
           time: newlyBookedAppointment.time,
-          patientId: "7769c180-3377-477b-8661-c8e8748eeecf", // Use the provided patientId
+          patientId: patientId, // Use the provided patientId
           doctorId: doctorId,
         },
       ]);
     }
   }, [newlyBookedAppointment, doctorId]);
-
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  const timeSlots = Array.from({ length: 20 }, (_, i) => {
-    const hour = Math.floor(i / 2) + 8;
-    const minute = (i % 2) * 30;
-    return `${hour.toString().padStart(2, "0")}:${minute === 0 ? "00" : "30"}`;
-  });
 
   const isSlotAvailable = (date: string, time: string) => {
     return (
@@ -111,7 +165,7 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
       // Use the hook to add the appointment
       addAppointment({
         id: "",
-        patientId: "7769c180-3377-477b-8661-c8e8748eeecf", // The patient ID
+        patientId: patientId, // The patient ID
         doctorId: doctorId,
         date: new Date(selectedSlot.date),
         time: selectedSlot.time,
@@ -152,26 +206,28 @@ const AppointmentTimetable: React.FC<AppointmentTimetableProps> = ({
             </tr>
           </thead>
           <tbody>
-            {timeSlots.map((time) => (
+            {timeSlots.map((time, rowIndex) => (
               <tr key={time}>
                 <td className="border p-2">{time}</td>
-                {daysOfWeek.map((_, index) => {
+                {daysOfWeek.map((_, colIndex) => {
+                  const unavailableappointment = timetable[colIndex][rowIndex];
                   const date = getDateForDayOfWeek(
-                    index + 1,
+                    colIndex + 2,
                     currentWeekStartDate
                   );
-                  const available = isSlotAvailable(date, time);
                   return (
                     <td
                       key={`${date}-${time}`}
                       className={`border p-2 ${
-                        available
-                          ? "bg-green-100 cursor-pointer hover:bg-green-200"
-                          : "bg-red-100"
+                        unavailableappointment
+                          ? "bg-red-100 cursor-not-allowed"
+                          : "bg-green-100 cursor-pointer hover:bg-green-200"
                       }`}
-                      onClick={() => available && handleSlotClick(date, time)}
+                      onClick={() =>
+                        !unavailableappointment && handleSlotClick(date, time)
+                      }
                     >
-                      {available ? "Available" : "Unavailable"}
+                      {unavailableappointment ? "Not Available" : "Available"}
                     </td>
                   );
                 })}
