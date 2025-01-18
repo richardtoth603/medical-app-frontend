@@ -11,6 +11,7 @@ import {
   useFetchDoctors,
   useFetchAppointmentsByPatientId,
 } from "@/hooks/patientHooks";
+import { useApplicationContext } from "@/context/ApplicationContext";
 
 const dummyMedicines: Medicine[] = [
   {
@@ -54,7 +55,7 @@ const navItems: NavItem[] = [
   { label: "Home", href: "home" },
   { label: "Patient Details", href: "patient" },
   { label: "Mental Health", href: "mental-health" },
-
+  {label: "Logout", href: "logout"}
 ];
 
 export default function PatientPortal() {
@@ -63,6 +64,7 @@ export default function PatientPortal() {
   const [medicines] = useState<Medicine[]>(dummyMedicines);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const params = useParams();
+  const appContext = useApplicationContext();
   const navigate = useNavigate();
 
   // Fetch appointments using the patient's ID
@@ -88,6 +90,10 @@ export default function PatientPortal() {
   }, []);
 
   const handleNavigation = (href: string) => {
+    if(href === "logout") {
+      appContext.logout();
+      navigate("/signin");
+    }
     setCurrentPage(href);
     setSelectedDoctor("");
   };

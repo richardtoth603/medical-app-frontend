@@ -13,6 +13,8 @@ import { useFetchAppointmentsByDoctorId } from "@/hooks/doctorHooks"; // Import 
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import PatientScreen from "./patient-page";
+import { useApplicationContext } from "@/context/ApplicationContext";
+import { useNavigate } from "react-router-dom";
 
 export default function DoctorPage() {
   const doctorId = localStorage.getItem("role_id"); // Ensure you have the correct doctor ID
@@ -42,12 +44,21 @@ export default function DoctorPage() {
   const [viewedPatient, setViewedPatient] = useState("");
   const [currentPage, setCurrentPage] = useState("home");
 
+
+  const appContext = useApplicationContext();
+  const navigate = useNavigate();
+
   const navbarItems: NavItem[] = [
     { label: "Home", href: "home" },
     { label: "Doctor Details", href: "doctor-details" },
+    { label: "Logout", href: "logout" },
   ];
 
   const handleNavigation = (href: string) => {
+    if (href === "logout") {
+      appContext.logout();
+      navigate("/signin");
+    }
     setIsViewingDoctorDetails(href === "doctor-details");
     setCurrentPage(href);
     setViewedPatient("");

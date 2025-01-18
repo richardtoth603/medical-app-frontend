@@ -70,10 +70,7 @@ export const ApplicationContextProvider = ({ children }: { children: React.React
     };
 
     const logout = () => {
-        localStorage.removeItem("email");
-        localStorage.removeItem("role");
-        localStorage.removeItem("role_id");
-        localStorage.removeItem("token");
+        localStorage.clear();
         setUser(undefined);
     };
 
