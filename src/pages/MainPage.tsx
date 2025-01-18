@@ -12,7 +12,17 @@ export function MainPage() {
                 navigate("/signin");
             }
         }
-        //TODO: add navigation to the corresponding dashboard based on the user role and claims
+        else {
+            const userRole = localStorage.getItem("role");
+            const userRoleId = localStorage.getItem("role_id");
+
+            if(userRole === "doctor" && userRoleId) {
+                navigate(`/doctordashboard/${userRoleId}`);
+            }
+            else if(userRole === "patient" && userRoleId) {
+                navigate(`/patientdashboard/${userRoleId}`);
+            }
+        }
     }, [navigate]);
 
     return (

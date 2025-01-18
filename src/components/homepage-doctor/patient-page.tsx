@@ -161,8 +161,8 @@ export default function PatientScreen({ patientId }: { patientId: string}) {
     e.preventDefault()
     if (newMessage.trim()) {
       sendMessageMutation.mutate({
-        doctorID: doctorId,
-        patientId: patientId,
+        sentBy: doctorId,
+        sentTo: patientId,
         content: newMessage,
       })
       setNewMessage('')
@@ -214,11 +214,11 @@ export default function PatientScreen({ patientId }: { patientId: string}) {
                 {sortedMessages?.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex ${msg.doctorID === doctorId ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${msg.sentBy === doctorId ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
                       className={`max-w-[70%] p-3 rounded-lg ${
-                        msg.doctorID === doctorId
+                        msg.sentBy === doctorId
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-secondary text-secondary-foreground'
                       }`}

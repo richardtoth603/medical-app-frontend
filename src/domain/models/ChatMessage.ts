@@ -1,7 +1,7 @@
 export interface ChatMessage{
     id: string,
-    patientId: string,
-    doctorID: string,
+    sentBy: string,
+    sentTo: string,
     content: string,
     sentAt: Date
 }

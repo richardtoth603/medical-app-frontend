@@ -30,8 +30,8 @@ export default function DoctorDetails({
     status: doctorStatus,
   } = useFetchDoctorById(doctorId);
   const { data: messages, isLoading: isLoadingMessages } = useFetchMessages(
-    doctorId,
-    patientId
+    patientId,
+    doctorId
   );
   const sendMessageMutation = useSendMessage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -47,8 +47,8 @@ export default function DoctorDetails({
   const handleSendMessage = () => {
     if (newMessage.trim()) {
       sendMessageMutation.mutate({
-        doctorID: doctorId,
-        patientId: patientId,
+        sentTo: doctorId,
+        sentBy: patientId,
         content: newMessage,
       });
       setNewMessage("");
@@ -136,18 +136,16 @@ export default function DoctorDetails({
                     {sortedMessages?.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`flex ${
-                          msg.doctorID === doctorId
+                        className={`flex ${msg.sentBy === patientId
                             ? "justify-end"
                             : "justify-start"
-                        }`}
+                          }`}
                       >
                         <div
-                          className={`max-w-[70%] p-3 rounded-lg ${
-                            msg.doctorID === doctorId
+                          className={`max-w-[70%] p-3 rounded-lg ${msg.sentBy === patientId
                               ? "bg-primary text-primary-foreground"
                               : "bg-secondary text-secondary-foreground"
-                          }`}
+                            }`}
                         >
                           <p className="mb-1">{msg.content}</p>
                           <p className="text-xs opacity-70">
@@ -186,7 +184,6 @@ export default function DoctorDetails({
 
       <AppointmentTimetable
         doctorId={doctorId}
-        onBookAppointment={handleBookAppointment}
         newlyBookedAppointment={newlyBookedAppointment}
       />
 

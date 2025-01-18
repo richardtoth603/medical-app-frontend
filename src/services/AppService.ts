@@ -18,7 +18,7 @@ export class PatientLocalUrls {
     static readonly updateAppointment = "https://localhost:7062/Appointments/UpdateAppointment";
     static readonly deleteAppointment = "https://localhost:7062/Appointments/DeleteAppointment/";
     static readonly addAppointment = "https://localhost:7062/Appointments/CreateAppointment";
-    static readonly getMessagesById = "https://localhost:7062/ChatMessage/GetSortedAndPaginatedChatMessagesByDoctorIdAndPatientId";
+    static readonly getMessagesById = "https://localhost:7062/ChatMessage/GetSortedAndPaginatedChatMessagesBySentByIdAndSentTo";
     static readonly sendMessage = "https://localhost:7062/ChatMessage/CreateChatMessage";
 }
 
@@ -195,8 +195,8 @@ export class AppService {
         }
     }
 
-    public static async getMessagesByIDs(doctorID: string, patientID: string): Promise<ChatMessage[]>{
-        const response = await fetch(`${PatientLocalUrls.getMessagesById}/${doctorID}/${patientID}`, {
+    public static async getMessagesByIDs(sentBy: string, sentTo: string): Promise<ChatMessage[]>{
+        const response = await fetch(`${PatientLocalUrls.getMessagesById}?Member1=${sentBy}&Member2=${sentTo}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -210,9 +210,9 @@ export class AppService {
             return data.records.map((message: any) => {
                 return{
                     id: message.id,
-                    doctorID: message.doctorID,
+                    sentTo: message.sentTo,
                     content: message.content,
-                    patientId: message.patientId,
+                    sentBy: message.sentBy,
                     sentAt: new Date(message.sentAt)
                 }
             }) as ChatMessage[];
@@ -235,9 +235,9 @@ export class AppService {
             const data = await response.json();
             return {
                 id: data.id,
-                doctorID: data.doctorID,
+                sentBy: data.sentBy,
                 content: data.content,
-                patientId: data.patientId,
+                sentTo: data.sentTo,
                 sentAt: new Date(data.sentAt)
             } as ChatMessage;
         } else {
