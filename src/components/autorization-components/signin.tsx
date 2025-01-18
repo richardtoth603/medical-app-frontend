@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Eye, EyeOff } from 'lucide-react'
 import { useApplicationContext } from '@/context/ApplicationContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 interface LoginData {
   email: string;
@@ -95,6 +95,9 @@ export default function Login() {
             <Button type="submit" className="w-full">Log In</Button>
           </form>
         </CardContent>
+        <CardFooter className="text-center">
+          <p>Don't have an account? <Link to="/signup" className="text-blue-500">Sign Up</Link></p>
+        </CardFooter>
       </Card>
     </div>
   )

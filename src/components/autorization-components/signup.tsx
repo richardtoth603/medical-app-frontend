@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye, EyeOff } from 'lucide-react'
 import { useApplicationContext } from '@/context/ApplicationContext'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 interface FormData {
   firstName: string;
@@ -69,22 +69,22 @@ export default function SignUp() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input 
-                  id="firstName" 
+                <Input
+                  id="firstName"
                   name="firstName"
-                  placeholder="John" 
-                  required 
+                  placeholder="John"
+                  required
                   onChange={handleInputChange}
                   value={formData.firstName}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input 
-                  id="lastName" 
+                <Input
+                  id="lastName"
                   name="lastName"
-                  placeholder="Doe" 
-                  required 
+                  placeholder="Doe"
+                  required
                   onChange={handleInputChange}
                   value={formData.lastName}
                 />
@@ -92,12 +92,12 @@ export default function SignUp() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
+              <Input
+                id="email"
                 name="email"
-                placeholder="john.doe@example.com" 
-                type="email" 
-                required 
+                placeholder="john.doe@example.com"
+                type="email"
+                required
                 onChange={handleInputChange}
                 value={formData.email}
               />
@@ -105,11 +105,11 @@ export default function SignUp() {
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Input 
-                  id="password" 
+                <Input
+                  id="password"
                   name="password"
-                  type={showPassword ? "text" : "password"} 
-                  required 
+                  type={showPassword ? "text" : "password"}
+                  required
                   onChange={handleInputChange}
                   value={formData.password}
                 />
@@ -125,11 +125,11 @@ export default function SignUp() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="dob">Date of Birth</Label>
-              <Input 
-                id="dob" 
+              <Input
+                id="dob"
                 name="dob"
-                type="date" 
-                required 
+                type="date"
+                required
                 onChange={handleInputChange}
                 value={formData.dob}
               />
@@ -149,11 +149,11 @@ export default function SignUp() {
             {role === 'doctor' && (
               <div className="space-y-2">
                 <Label htmlFor="specialty">Specialty</Label>
-                <Input 
-                  id="specialty" 
+                <Input
+                  id="specialty"
                   name="specialty"
-                  placeholder="e.g., Cardiology, Pediatrics" 
-                  required 
+                  placeholder="e.g., Cardiology, Pediatrics"
+                  required
                   onChange={handleInputChange}
                   value={formData.specialty || ''}
                 />
@@ -162,6 +162,9 @@ export default function SignUp() {
             <Button type="submit" className="w-full">Sign Up</Button>
           </form>
         </CardContent>
+        <CardFooter className="text-center">
+          <p>Already have an account? <Link to="/signin" className="text-blue-500">Sign In</Link></p>
+        </CardFooter>
       </Card>
     </div>
   )
