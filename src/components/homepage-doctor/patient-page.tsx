@@ -192,9 +192,6 @@ export default function PatientScreen({ patientId }: { patientId: string}) {
 
                   <div className="col-span-1 font-semibold">Last Name:</div>
                   <div className="col-span-2">{patient.lastName}</div>
-
-                  <div className="col-span-1 font-semibold">Date of Birth:</div>
-                  <div className="col-span-2">{dayjs(patient.dateOfBirth).format('MMM D, YYYY')}</div>
                 </dl>
               </CardContent>
             </>
